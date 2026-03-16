@@ -28,7 +28,7 @@ Build the v0.1.0 MVP of agentsync — a CLI tool that links AI coding agent conf
       "Add scripts: build, dev, test, lint to package.json",
       "Run npx tsc --noEmit to verify setup"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SETUP-002",
