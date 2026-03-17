@@ -9,7 +9,7 @@
     "agentsync": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && cp -r agents dist/agents",
     "dev": "tsup --watch",
     "test": "vitest run",
     "lint": "tsc --noEmit"

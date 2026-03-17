@@ -44,7 +44,7 @@ Build the v0.1.0 MVP of agentsync — a CLI tool that links AI coding agent conf
       "Write test: src/core/__tests__/schema-loader.test.ts — verify loading both agent definitions, validate required fields exist",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-001",

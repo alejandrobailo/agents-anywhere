@@ -1,0 +1,43 @@
+{
+  "id": "codex",
+  "name": "Codex CLI",
+  "configDir": {
+    "darwin": "~/.codex",
+    "linux": "~/.codex",
+    "win32": "%APPDATA%/codex"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.codex"
+  },
+  "portable": [
+    "config.toml",
+    "AGENTS.md",
+    "skills/**"
+  ],
+  "ignore": [
+    "sessions/**",
+    "cache/**",
+    "*.backup.*"
+  ],
+  "credentials": [],
+  "instructions": {
+    "filename": "AGENTS.md",
+    "globalPath": "~/.codex/AGENTS.md"
+  },
+  "mcp": {
+    "configPath": "config.toml",
+    "scope": "user",
+    "rootKey": "mcp_servers",
+    "format": "toml",
+    "envSyntax": "env_vars",
+    "transports": {
+      "stdio": { "typeField": "type", "typeValue": "stdio" },
+      "http": { "typeField": "type", "typeValue": "http" }
+    },
+    "commandType": "string",
+    "envKey": "env_vars",
+    "serverSection": "mcp_servers",
+    "envVarStyle": "named"
+  }
+}

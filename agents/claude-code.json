@@ -1,0 +1,60 @@
+{
+  "id": "claude-code",
+  "name": "Claude Code",
+  "configDir": {
+    "darwin": "~/.claude",
+    "linux": "~/.claude",
+    "win32": "%APPDATA%/claude"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.claude"
+  },
+  "portable": [
+    "settings.json",
+    "keybindings.json",
+    "CLAUDE.md",
+    "commands/**",
+    "skills/**"
+  ],
+  "ignore": [
+    "history.jsonl",
+    "projects/**",
+    "sessions/**",
+    "session-env/**",
+    "shell-snapshots/**",
+    "debug/**",
+    "statsig/**",
+    "telemetry/**",
+    "todos/**",
+    "file-history/**",
+    "paste-cache/**",
+    "cache/**",
+    "ide/**",
+    "plans/**",
+    "downloads/**",
+    "stats-cache.json",
+    "*.backup.*"
+  ],
+  "credentials": [
+    "~/.claude.json"
+  ],
+  "instructions": {
+    "filename": "CLAUDE.md",
+    "globalPath": "~/.claude/CLAUDE.md"
+  },
+  "mcp": {
+    "configPath": ".mcp.json",
+    "scope": "project-and-user",
+    "rootKey": "mcpServers",
+    "format": "json",
+    "envSyntax": "${VAR}",
+    "defaultSyntax": "${VAR:-default}",
+    "transports": {
+      "stdio": { "typeField": "type", "typeValue": "stdio" },
+      "http": { "typeField": "type", "typeValue": "http" }
+    },
+    "commandType": "string",
+    "envKey": "env"
+  }
+}
