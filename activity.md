@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-17
-**Tasks Completed:** 9/10
-**Current Task:** FEAT-007
+**Tasks Completed:** 10/10
+**Current Task:** ALL COMPLETE
 
 ---
 
@@ -118,3 +118,11 @@
 - Uses tmp directory as fake HOME, mocks os.homedir() for path resolution, verifies filesystem state
 - `npx tsc --noEmit` passes clean, all 57 tests pass (51 existing + 6 new)
 - **Files:** src/__tests__/e2e.test.ts
+
+### 2026-03-17 — FEAT-007 (feature)
+- Added README.md with project description, quick start guide, feature overview with MCP normalization example, commands table, supported agents table, repo structure, and contributing guide for agent definitions
+- Added LICENSE file (MIT)
+- Added .npmignore to exclude src/, test files, dev configs, and planning docs from published package
+- `npx tsc --noEmit` passes clean, all 57 tests pass
+- `npm pack --dry-run` confirms correct package contents (LICENSE, README.md, agents/, package.json)
+- **Files:** README.md, LICENSE, .npmignore

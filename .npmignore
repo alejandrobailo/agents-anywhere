@@ -1,0 +1,11 @@
+src/
+*.test.ts
+__tests__/
+tsconfig.json
+tsup.config.ts
+.github/
+PRD.md
+PROMPT.md
+plan.md
+activity.md
+ralph.sh

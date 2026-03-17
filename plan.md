@@ -171,7 +171,7 @@ Build the v0.1.0 MVP of agentsync — a CLI tool that links AI coding agent conf
       "Run vitest to ensure all tests pass",
       "Run npm pack --dry-run to verify package contents"
     ],
-    "passes": false
+    "passes": true
   }
 ]
 ```
