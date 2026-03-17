@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-17
-**Tasks Completed:** 6/10
-**Current Task:** FEAT-005
+**Tasks Completed:** 7/10
+**Current Task:** FEAT-006
 
 ---
 
@@ -83,3 +83,16 @@
 - Created src/mcp/__tests__/writer.test.ts with 11 tests — JSON write/overwrite, JSON merge preserving keys, TOML merge preserving sections, TOML replacement, directory creation
 - `npx tsc --noEmit` passes clean, all 51 tests pass (40 existing + 11 new)
 - **Files:** src/mcp/writer.ts, src/mcp/__tests__/writer.test.ts
+
+### 2026-03-17 — FEAT-005 (feature)
+- Wired up CLI commands: init, link, unlink, status, agents
+- Created src/utils/output.ts with colored console helpers (info, success, warn, error, heading, table, statusBadge) using ANSI escape codes
+- Created src/utils/manifest.ts with loadManifest() to find and load agentsync.json from cwd or default ~/agentsync-config location
+- Created src/commands/init.ts — detects agents, creates repo dir (default ~/agentsync-config), scaffolds agentsync.json manifest + mcp.json + .gitignore + per-agent dirs, runs git init, sets up post-merge hook for auto re-link/sync on pull
+- Created src/commands/link.ts — links all enabled agents (or specific agent by ID), uses manifest to determine enabled agents, shows colored per-agent output with backup notifications
+- Created src/commands/unlink.ts — unlinks all or specific agent, restores backups, shows colored per-agent output
+- Created src/commands/status.ts — shows table of agents with per-item link status (linked, unlinked, diverged, missing)
+- Created src/commands/agents.ts — lists all known agents with install status, link count for enabled agents
+- Updated src/cli.ts to import and wire all command handlers, added optional [dir] argument to init command
+- `npx tsc --noEmit` passes clean, all 51 tests pass (no new tests for this task — CLI commands are integration-level)
+- **Files:** src/utils/output.ts, src/utils/manifest.ts, src/commands/init.ts, src/commands/link.ts, src/commands/unlink.ts, src/commands/status.ts, src/commands/agents.ts, src/cli.ts

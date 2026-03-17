@@ -2,6 +2,12 @@
 
 import { Command } from "commander";
 
+import { initCommand } from "./commands/init.js";
+import { linkCommand } from "./commands/link.js";
+import { unlinkCommand } from "./commands/unlink.js";
+import { statusCommand } from "./commands/status.js";
+import { agentsCommand } from "./commands/agents.js";
+
 const program = new Command();
 
 program
@@ -16,36 +22,37 @@ program
   .description(
     "Detect installed agents, create config repo, and scaffold structure",
   )
-  .action(async () => {
-    console.log("agentsync init — not yet implemented");
+  .argument("[dir]", "Config repo directory (default: ~/agentsync-config)")
+  .action(async (dir?: string) => {
+    await initCommand(dir);
   });
 
 program
   .command("link [agent]")
   .description("Link agent configs from central repo to agent config dirs")
   .action(async (agent?: string) => {
-    console.log(`agentsync link ${agent ?? "(all)"} — not yet implemented`);
+    await linkCommand(agent);
   });
 
 program
   .command("unlink [agent]")
   .description("Unlink agent configs and restore backups")
   .action(async (agent?: string) => {
-    console.log(`agentsync unlink ${agent ?? "(all)"} — not yet implemented`);
+    await unlinkCommand(agent);
   });
 
 program
   .command("status")
   .description("Show link status for all agents and their config files")
   .action(async () => {
-    console.log("agentsync status — not yet implemented");
+    await statusCommand();
   });
 
 program
   .command("agents")
   .description("List all known agents with install and link status")
   .action(async () => {
-    console.log("agentsync agents — not yet implemented");
+    await agentsCommand();
   });
 
 const mcp = program
