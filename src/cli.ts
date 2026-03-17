@@ -7,6 +7,9 @@ import { linkCommand } from "./commands/link.js";
 import { unlinkCommand } from "./commands/unlink.js";
 import { statusCommand } from "./commands/status.js";
 import { agentsCommand } from "./commands/agents.js";
+import { mcpSyncCommand } from "./commands/mcp-sync.js";
+import { mcpAddCommand } from "./commands/mcp-add.js";
+import { mcpListCommand } from "./commands/mcp-list.js";
 
 const program = new Command();
 
@@ -65,21 +68,21 @@ mcp
     "Generate per-agent MCP configs from the normalized mcp.json",
   )
   .action(async () => {
-    console.log("agentsync mcp sync — not yet implemented");
+    await mcpSyncCommand();
   });
 
 mcp
   .command("add <name>")
   .description("Add an MCP server to the normalized mcp.json")
   .action(async (name: string) => {
-    console.log(`agentsync mcp add ${name} — not yet implemented`);
+    await mcpAddCommand(name);
   });
 
 mcp
   .command("list")
   .description("List all configured MCP servers")
   .action(async () => {
-    console.log("agentsync mcp list — not yet implemented");
+    await mcpListCommand();
   });
 
 program.parse();

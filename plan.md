@@ -140,7 +140,7 @@ Build the v0.1.0 MVP of agentsync — a CLI tool that links AI coding agent conf
       "Implement 'agentsync mcp list' in src/commands/mcp-list.ts — read mcp.json, show table of servers with transport type and env vars",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-001",

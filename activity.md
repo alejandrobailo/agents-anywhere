@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-17
-**Tasks Completed:** 7/10
-**Current Task:** FEAT-006
+**Tasks Completed:** 8/10
+**Current Task:** TEST-001
 
 ---
 
@@ -96,3 +96,12 @@
 - Updated src/cli.ts to import and wire all command handlers, added optional [dir] argument to init command
 - `npx tsc --noEmit` passes clean, all 51 tests pass (no new tests for this task — CLI commands are integration-level)
 - **Files:** src/utils/output.ts, src/utils/manifest.ts, src/commands/init.ts, src/commands/link.ts, src/commands/unlink.ts, src/commands/status.ts, src/commands/agents.ts, src/cli.ts
+
+### 2026-03-17 — FEAT-006 (feature)
+- Wired up MCP CLI commands: mcp sync, mcp add, mcp list
+- Created src/commands/mcp-sync.ts — reads mcp.json from repo, parses with parseMCPConfig, transforms for each enabled agent using transformForAgent, writes to agent config dirs using writeJSON (for JSON agents like Claude Code) or writeTOML (for TOML agents like Codex), shows colored per-agent summary
+- Created src/commands/mcp-add.ts — interactive prompts via readline: transport type (stdio/http), command or URL, args, env vars (repeating loop), authorization header for http transport → appends server entry to mcp.json
+- Created src/commands/mcp-list.ts — reads mcp.json, displays table of servers with name, transport type, command/URL, env vars, and header vars
+- Updated src/cli.ts to import and wire all three MCP command handlers (replaced stub implementations)
+- `npx tsc --noEmit` passes clean, all 51 tests pass (no new tests — CLI commands are integration-level)
+- **Files:** src/commands/mcp-sync.ts, src/commands/mcp-add.ts, src/commands/mcp-list.ts, src/cli.ts
