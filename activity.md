@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-17
-**Tasks Completed:** 3/10
-**Current Task:** FEAT-002
+**Tasks Completed:** 4/10
+**Current Task:** FEAT-003
 
 ---
 
@@ -48,3 +48,14 @@
 - Created src/core/__tests__/detector.test.ts with 7 tests — mocks fs.existsSync for detection paths while preserving real fs for schema-loader
 - `npx tsc --noEmit` passes clean, all 13 tests pass (6 schema-loader + 7 detector)
 - **Files:** src/utils/paths.ts, src/core/detector.ts, src/core/__tests__/detector.test.ts
+
+### 2026-03-17 — FEAT-002 (feature)
+- Implemented symlink manager for linking/unlinking agent configs to a central repo
+- Created src/core/linker.ts with linkAgent(), unlinkAgent(), and getStatus() functions
+- linkAgent() creates symlinks from agent configDir to repoDir/agentId/, backs up existing real files to .backup.{timestamp}, skips already-correct symlinks (idempotent)
+- unlinkAgent() removes symlinks pointing to repo, restores most recent backup if available
+- getStatus() returns per-item link status: linked, unlinked, diverged, or missing
+- Helper utilities: isSymlinkTo(), findMostRecentBackup(), getPortableItems() (expands glob patterns to top-level items)
+- Created src/core/__tests__/linker.test.ts with 12 tests — link creation, backup, idempotency, unlink with restore, status reporting
+- `npx tsc --noEmit` passes clean, all 25 tests pass (13 existing + 12 linker)
+- **Files:** src/core/linker.ts, src/core/__tests__/linker.test.ts
