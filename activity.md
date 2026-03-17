@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-17
-**Tasks Completed:** 5/10
-**Current Task:** FEAT-004
+**Tasks Completed:** 6/10
+**Current Task:** FEAT-005
 
 ---
 
@@ -72,3 +72,14 @@
 - Created src/mcp/__tests__/transformer.test.ts with 15 tests — Claude Code transform, Codex transform, parser validation, edge cases, snapshot tests
 - `npx tsc --noEmit` passes clean, all 40 tests pass (25 existing + 15 new)
 - **Files:** src/mcp/types.ts, src/mcp/parser.ts, src/mcp/transformer.ts, src/mcp/__tests__/transformer.test.ts
+
+### 2026-03-17 — FEAT-004 (feature)
+- Implemented MCP writer — write transformed configs to each agent's expected location and format
+- Created src/mcp/writer.ts with three write functions:
+  - writeJSON(path, rootKey, servers) — standalone JSON MCP config (Claude Code, Cursor, Windsurf), overwrites entire file
+  - mergeJSON(path, key, servers) — merge MCP key into existing JSON file preserving other keys (Gemini, OpenCode)
+  - writeTOML(path, servers) — merge [mcp_servers] section into existing TOML config without destroying other keys (Codex)
+- All writers create parent directories if needed, use smol-toml for TOML read/write
+- Created src/mcp/__tests__/writer.test.ts with 11 tests — JSON write/overwrite, JSON merge preserving keys, TOML merge preserving sections, TOML replacement, directory creation
+- `npx tsc --noEmit` passes clean, all 51 tests pass (40 existing + 11 new)
+- **Files:** src/mcp/writer.ts, src/mcp/__tests__/writer.test.ts

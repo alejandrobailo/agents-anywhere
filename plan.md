@@ -111,7 +111,7 @@ Build the v0.1.0 MVP of agentsync — a CLI tool that links AI coding agent conf
       "Write test: src/mcp/__tests__/writer.test.ts — test JSON write, TOML merge preserving existing keys, JSON merge preserving existing keys",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-005",
