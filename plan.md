@@ -156,7 +156,7 @@ Build the v0.1.0 MVP of agentsync — a CLI tool that links AI coding agent conf
       "Verify unlink removes symlinks and restores backups",
       "Run vitest to ensure all tests pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-007",

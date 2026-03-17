@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-17
-**Tasks Completed:** 8/10
-**Current Task:** TEST-001
+**Tasks Completed:** 9/10
+**Current Task:** FEAT-007
 
 ---
 
@@ -105,3 +105,16 @@
 - Updated src/cli.ts to import and wire all three MCP command handlers (replaced stub implementations)
 - `npx tsc --noEmit` passes clean, all 51 tests pass (no new tests — CLI commands are integration-level)
 - **Files:** src/commands/mcp-sync.ts, src/commands/mcp-add.ts, src/commands/mcp-list.ts, src/cli.ts
+
+### 2026-03-17 — TEST-001 (test)
+- Added end-to-end integration test for full init → link → mcp sync → unlink workflow
+- Created src/__tests__/e2e.test.ts with 6 tests covering:
+  - Init creates repo structure with manifest, mcp.json, .gitignore, per-agent dirs, git repo, and post-merge hook
+  - Link creates symlinks from agent config dirs to repo for both Claude Code and Codex
+  - MCP sync generates correct Claude Code .mcp.json with mcpServers root key and ${VAR} env syntax
+  - MCP sync generates correct Codex config.toml with [mcp_servers] section and env_vars named style
+  - Unlink removes symlinks and restores backed-up original files
+  - Full integrated workflow test: init → link → mcp sync → verify outputs → unlink → verify cleanup
+- Uses tmp directory as fake HOME, mocks os.homedir() for path resolution, verifies filesystem state
+- `npx tsc --noEmit` passes clean, all 57 tests pass (51 existing + 6 new)
+- **Files:** src/__tests__/e2e.test.ts
