@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-17
-**Tasks Completed:** 4/10
-**Current Task:** FEAT-003
+**Tasks Completed:** 5/10
+**Current Task:** FEAT-004
 
 ---
 
@@ -59,3 +59,16 @@
 - Created src/core/__tests__/linker.test.ts with 12 tests — link creation, backup, idempotency, unlink with restore, status reporting
 - `npx tsc --noEmit` passes clean, all 25 tests pass (13 existing + 12 linker)
 - **Files:** src/core/linker.ts, src/core/__tests__/linker.test.ts
+
+### 2026-03-17 — FEAT-003 (feature)
+- Implemented MCP config normalizer — parse normalized mcp.json and transform to per-agent formats
+- Created src/mcp/types.ts with NormalizedMCPConfig, NormalizedServer, EnvRef types for the canonical mcp.json format
+- Created src/mcp/parser.ts with parseMCPConfig() and parseMCPConfigFromString() — validates structure, transport types, env refs
+- Created src/mcp/transformer.ts with transformForAgent(config, agentDef) — core transformation engine
+- Handles inline env syntax (Claude Code: `${VAR}`) and named env var style (Codex: `env_vars` array)
+- Handles prefix in headers: `{ $env: 'TOKEN', prefix: 'Bearer ' }` → `Bearer ${TOKEN}` (inline) or `bearer_token_env_var` (named)
+- Handles transport type mapping via agent definition transports config
+- Handles command type, args, and URL for stdio/http transports
+- Created src/mcp/__tests__/transformer.test.ts with 15 tests — Claude Code transform, Codex transform, parser validation, edge cases, snapshot tests
+- `npx tsc --noEmit` passes clean, all 40 tests pass (25 existing + 15 new)
+- **Files:** src/mcp/types.ts, src/mcp/parser.ts, src/mcp/transformer.ts, src/mcp/__tests__/transformer.test.ts

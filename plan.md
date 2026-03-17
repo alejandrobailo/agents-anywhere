@@ -95,7 +95,7 @@ Build the v0.1.0 MVP of agentsync — a CLI tool that links AI coding agent conf
       "Write test: src/mcp/__tests__/transformer.test.ts — snapshot tests for Claude Code and Codex output from same normalized input",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-004",

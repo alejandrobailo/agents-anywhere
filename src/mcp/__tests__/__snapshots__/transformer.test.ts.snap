@@ -1,0 +1,53 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`transformForAgent > Claude Code > snapshot: full Claude Code output 1`] = `
+{
+  "format": "json",
+  "rootKey": "mcpServers",
+  "servers": {
+    "github": {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github",
+      ],
+      "command": "npx",
+      "env": {
+        "GITHUB_TOKEN": "\${GITHUB_TOKEN}",
+      },
+      "type": "stdio",
+    },
+    "sentry": {
+      "headers": {
+        "Authorization": "Bearer \${SENTRY_TOKEN}",
+      },
+      "type": "http",
+      "url": "https://mcp.sentry.dev/sse",
+    },
+  },
+}
+`;
+
+exports[`transformForAgent > Codex > snapshot: full Codex output 1`] = `
+{
+  "format": "toml",
+  "rootKey": "mcp_servers",
+  "servers": {
+    "github": {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github",
+      ],
+      "command": "npx",
+      "env_vars": [
+        "GITHUB_TOKEN",
+      ],
+      "type": "stdio",
+    },
+    "sentry": {
+      "bearer_token_env_var": "SENTRY_TOKEN",
+      "type": "http",
+      "url": "https://mcp.sentry.dev/sse",
+    },
+  },
+}
+`;
