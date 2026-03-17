@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-17
-**Tasks Completed:** 2/10
-**Current Task:** FEAT-001
+**Tasks Completed:** 3/10
+**Current Task:** FEAT-002
 
 ---
 
@@ -38,3 +38,13 @@
 - Created src/core/__tests__/schema-loader.test.ts — 6 tests validating loading, field presence, by-ID lookup, and error handling
 - `npx tsc --noEmit` passes clean, all 6 tests pass
 - **Files:** src/schemas/agent-schema.ts, src/core/schema-loader.ts, src/core/__tests__/schema-loader.test.ts, agents/claude-code.json, agents/codex.json, package.json
+
+### 2026-03-17 — FEAT-001 (feature)
+- Implemented agent detector that scans filesystem for installed AI coding agents
+- Created src/utils/paths.ts with expandPath() for ~ and %APPDATA% expansion, and getPlatformPath() for platform-specific config dir resolution
+- Created src/core/detector.ts with detectAgents() and detectSingleAgent() functions returning DetectedAgent objects ({ definition, configDir, installed })
+- Handles platform-specific configDir (darwin/linux/win32) via getPlatformPath utility
+- Detection uses directory-exists rule with fs.existsSync on expanded paths
+- Created src/core/__tests__/detector.test.ts with 7 tests — mocks fs.existsSync for detection paths while preserving real fs for schema-loader
+- `npx tsc --noEmit` passes clean, all 13 tests pass (6 schema-loader + 7 detector)
+- **Files:** src/utils/paths.ts, src/core/detector.ts, src/core/__tests__/detector.test.ts
