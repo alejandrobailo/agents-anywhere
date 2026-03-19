@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 8/11
-**Current Task:** FEAT-009
+**Tasks Completed:** 9/11
+**Current Task:** TEST-003
 
 ---
 
@@ -207,3 +207,15 @@
 - Exported individual check functions for testability
 - `npx tsc --noEmit` passes clean, all 74 tests pass
 - **Files:** src/commands/doctor.ts, src/cli.ts
+
+### 2026-03-19 — FEAT-009 (feature)
+- Implemented `agentsync mcp diff` command to preview what `mcp sync` would change
+- Parses mcp.json, transforms for each enabled agent (reuses transformForAgent), reads existing agent MCP config files
+- For JSON: reads servers under rootKey, compares serialized server entries
+- For TOML: reads mcp_servers section, compares serialized server entries
+- Shows colored per-agent diff: green for additions, red for removals, yellow for changes
+- If no changes across all agents, shows "All agents up to date"
+- Exported diffServers() for testability
+- Wired up in src/cli.ts as `agentsync mcp diff`
+- `npx tsc --noEmit` passes clean, all 74 tests pass
+- **Files:** src/commands/mcp-diff.ts, src/cli.ts

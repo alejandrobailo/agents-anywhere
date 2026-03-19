@@ -10,6 +10,7 @@ import { agentsCommand } from "./commands/agents.js";
 import { mcpSyncCommand } from "./commands/mcp-sync.js";
 import { mcpAddCommand } from "./commands/mcp-add.js";
 import { mcpListCommand } from "./commands/mcp-list.js";
+import { mcpDiffCommand } from "./commands/mcp-diff.js";
 import { doctorCommand } from "./commands/doctor.js";
 
 const program = new Command();
@@ -84,6 +85,13 @@ mcp
   .description("Add an MCP server to the normalized mcp.json")
   .action(async (name: string) => {
     await mcpAddCommand(name);
+  });
+
+mcp
+  .command("diff")
+  .description("Preview what `mcp sync` would change for each agent")
+  .action(async () => {
+    await mcpDiffCommand();
   });
 
 mcp

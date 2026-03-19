@@ -153,7 +153,7 @@ Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their
       "Wire up in src/cli.ts as 'agentsync mcp diff'",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-003",
