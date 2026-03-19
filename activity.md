@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 3/11
-**Current Task:** AGENT-001
+**Tasks Completed:** 4/11
+**Current Task:** AGENT-002
 
 ---
 
@@ -151,3 +151,14 @@
 - This enables Phase 2 agents like OpenCode and Gemini CLI that merge MCP config into existing JSON files
 - `npx tsc --noEmit` passes clean
 - **Files:** src/commands/mcp-sync.ts
+
+### 2026-03-19 — AGENT-001 (feature)
+- Created OpenCode agent definition (agents/opencode.json)
+- Configured array command type, {env:VAR} env syntax, inline envVarStyle
+- configDir: ~/.config/opencode (darwin/linux), %APPDATA%/opencode (win32)
+- MCP: merge writeMode, 'mcp' rootKey, JSON format, array commandType
+- Transports: stdio → local (with type field), http → remote (with type field, url urlKey)
+- Portable files: opencode.json, AGENTS.md
+- Verified definition loads correctly via schema-loader tests
+- `npx tsc --noEmit` passes clean, all 64 tests pass
+- **Files:** agents/opencode.json

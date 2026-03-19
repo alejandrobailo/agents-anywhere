@@ -1,0 +1,42 @@
+{
+  "id": "opencode",
+  "name": "OpenCode",
+  "configDir": {
+    "darwin": "~/.config/opencode",
+    "linux": "~/.config/opencode",
+    "win32": "%APPDATA%/opencode"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.config/opencode"
+  },
+  "portable": [
+    "opencode.json",
+    "AGENTS.md"
+  ],
+  "ignore": [
+    "sessions/**",
+    "cache/**",
+    "*.backup.*"
+  ],
+  "credentials": [],
+  "instructions": {
+    "filename": "AGENTS.md",
+    "globalPath": "~/.config/opencode/AGENTS.md"
+  },
+  "mcp": {
+    "configPath": "opencode.json",
+    "scope": "user",
+    "rootKey": "mcp",
+    "format": "json",
+    "writeMode": "merge",
+    "envSyntax": "{env:VAR}",
+    "transports": {
+      "stdio": { "typeField": "type", "typeValue": "local" },
+      "http": { "typeField": "type", "typeValue": "remote", "urlKey": "url" }
+    },
+    "commandType": "array",
+    "envKey": "env",
+    "envVarStyle": "inline"
+  }
+}
