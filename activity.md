@@ -1,10 +1,10 @@
-# agentsync - Activity Log (MVP v0.1.0)
+# agentsync - Activity Log (Phase 2 v0.2.0)
 
 ## Current Status
 
-**Last Updated:** 2026-03-17
-**Tasks Completed:** 10/10
-**Current Task:** ALL COMPLETE
+**Last Updated:** 2026-03-19
+**Tasks Completed:** 1/11
+**Current Task:** XFORM-001
 
 ---
 
@@ -126,3 +126,13 @@
 - `npx tsc --noEmit` passes clean, all 57 tests pass
 - `npm pack --dry-run` confirms correct package contents (LICENSE, README.md, agents/, package.json)
 - **Files:** README.md, LICENSE, .npmignore
+
+### 2026-03-19 — SCHEMA-001 (setup)
+- Updated TypeScript types to support Phase 2 agent config patterns
+- Made TransportConfig.typeField and typeValue optional (some agents like Gemini infer transport implicitly)
+- Added optional urlKey to TransportConfig (Gemini uses 'httpUrl' instead of 'url')
+- Added writeMode: 'standalone' | 'merge' to MCPConfig for routing write behavior
+- Updated transformer to guard against undefined typeField/typeValue and use urlKey for HTTP URLs
+- Added writeMode 'standalone' to claude-code.json, writeMode 'merge' to codex.json
+- `npx tsc --noEmit` passes clean, all 57 tests pass
+- **Files:** src/schemas/agent-schema.ts, src/mcp/transformer.ts, agents/claude-code.json, agents/codex.json

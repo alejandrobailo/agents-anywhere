@@ -30,6 +30,7 @@
     "scope": "user",
     "rootKey": "mcp_servers",
     "format": "toml",
+    "writeMode": "merge",
     "envSyntax": "env_vars",
     "transports": {
       "stdio": { "typeField": "type", "typeValue": "stdio" },

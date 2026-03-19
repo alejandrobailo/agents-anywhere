@@ -25,8 +25,12 @@ export interface InstructionsConfig {
 
 /** Transport definition for MCP */
 export interface TransportConfig {
-  typeField: string;
-  typeValue: string;
+  /** Field name for transport type (e.g. "type"). Omit if agent infers transport implicitly. */
+  typeField?: string;
+  /** Value for transport type (e.g. "stdio", "local"). Omit if agent infers transport implicitly. */
+  typeValue?: string;
+  /** Key name for the HTTP URL field (default: "url"). Some agents use "httpUrl". */
+  urlKey?: string;
 }
 
 /** Map of transport types to their config */
@@ -41,6 +45,8 @@ export interface MCPConfig {
   scope: "project-and-user" | "user" | "project";
   rootKey: string;
   format?: "json" | "toml";
+  /** How to write the config file: 'standalone' overwrites entire file, 'merge' preserves non-MCP keys */
+  writeMode: "standalone" | "merge";
   envSyntax: string;
   defaultSyntax?: string;
   transports: TransportMap;

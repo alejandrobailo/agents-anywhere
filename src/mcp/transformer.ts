@@ -58,9 +58,9 @@ function transformServerInline(
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
-  // Set transport type field
+  // Set transport type field (skip if agent infers transport implicitly)
   const transportDef = mcp.transports[server.transport];
-  if (transportDef) {
+  if (transportDef?.typeField && transportDef.typeValue) {
     result[transportDef.typeField] = transportDef.typeValue;
   }
 
@@ -70,7 +70,8 @@ function transformServerInline(
       result.args = server.args;
     }
   } else if (server.transport === "http") {
-    result.url = server.url;
+    const urlKey = transportDef?.urlKey ?? "url";
+    result[urlKey] = server.url;
   }
 
   // Transform env vars
@@ -101,9 +102,9 @@ function transformServerNamed(
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
-  // Set transport type
+  // Set transport type (skip if agent infers transport implicitly)
   const transportDef = mcp.transports[server.transport];
-  if (transportDef) {
+  if (transportDef?.typeField && transportDef.typeValue) {
     result[transportDef.typeField] = transportDef.typeValue;
   }
 
@@ -113,7 +114,8 @@ function transformServerNamed(
       result.args = server.args;
     }
   } else if (server.transport === "http") {
-    result.url = server.url;
+    const urlKey = transportDef?.urlKey ?? "url";
+    result[urlKey] = server.url;
   }
 
   // For named style, env vars are listed as an array of var names

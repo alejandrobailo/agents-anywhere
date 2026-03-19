@@ -48,6 +48,7 @@
     "scope": "project-and-user",
     "rootKey": "mcpServers",
     "format": "json",
+    "writeMode": "standalone",
     "envSyntax": "${VAR}",
     "defaultSyntax": "${VAR:-default}",
     "transports": {
