@@ -134,7 +134,7 @@ Expand agent coverage with Windsurf. Add `agentsync export` for shareable instal
       "Test that the script is valid bash (starts with #!/bin/bash, no syntax errors in template)",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "RELEASE-002",

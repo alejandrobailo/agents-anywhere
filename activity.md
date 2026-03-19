@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 7/9
-**Current Task:** TEST-007 — Add tests for export command
+**Tasks Completed:** 8/9
+**Current Task:** RELEASE-002 — Update README, bump version to 0.3.0, verify package
 
 ---
 
@@ -320,3 +320,17 @@
 - Wired up in src/cli.ts as `agentsync export`
 - `npx tsc --noEmit` passes clean, all 122 tests pass
 - **Files:** src/commands/export.ts, src/cli.ts
+
+### 2026-03-19 — TEST-007 (test)
+- Added 9 tests for export command in src/commands/__tests__/export.test.ts
+- Test valid bash shebang and set -euo pipefail flags
+- Test mcp.json content written inline with heredoc
+- Test mkdir -p calls for agent config dirs (repo subdirs and agent config dirs)
+- Test symlink creation for portable files with source existence checks and backup logic
+- Test per-agent MCP config written inline with agent-specific heredoc delimiters
+- Test multiple agents produce separate sections with correct agent counts
+- Test $HOME substitution for portable paths
+- Test empty portable items produces no symlink section
+- Test well-formed bash: matched heredoc open/close, matched if/fi, trailing newline
+- `npx tsc --noEmit` passes clean, all 131 tests pass (122 existing + 9 new)
+- **Files:** src/commands/__tests__/export.test.ts
