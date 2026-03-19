@@ -12,11 +12,14 @@ describe("schema-loader", () => {
   describe("loadAllAgentDefinitions", () => {
     it("loads all agent definitions from the agents/ directory", () => {
       const agents = loadAllAgentDefinitions();
-      expect(agents.length).toBeGreaterThanOrEqual(2);
+      expect(agents.length).toBe(5);
 
       const ids = agents.map((a) => a.id);
       expect(ids).toContain("claude-code");
       expect(ids).toContain("codex");
+      expect(ids).toContain("opencode");
+      expect(ids).toContain("gemini-cli");
+      expect(ids).toContain("cursor");
     });
   });
 

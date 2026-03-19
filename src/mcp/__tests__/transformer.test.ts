@@ -294,6 +294,137 @@ describe("Phase 2 transformer features", () => {
   });
 });
 
+describe("OpenCode", () => {
+  it("transforms stdio server with array command and {env:VAR} syntax", async () => {
+    const agent = await loadAgentById("opencode");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.rootKey).toBe("mcp");
+    expect(result.format).toBe("json");
+    expect(result.servers.github).toEqual({
+      type: "local",
+      command: ["npx", "-y", "@modelcontextprotocol/server-github"],
+      env: {
+        GITHUB_TOKEN: "{env:GITHUB_TOKEN}",
+      },
+    });
+  });
+
+  it("transforms http server with remote transport type", async () => {
+    const agent = await loadAgentById("opencode");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.servers.sentry).toEqual({
+      type: "remote",
+      url: "https://mcp.sentry.dev/sse",
+      headers: {
+        Authorization: "Bearer {env:SENTRY_TOKEN}",
+      },
+    });
+  });
+
+  it("snapshot: full OpenCode output", async () => {
+    const agent = await loadAgentById("opencode");
+    const result = transformForAgent(sampleConfig, agent!);
+    expect(result).toMatchSnapshot();
+  });
+});
+
+describe("Gemini CLI", () => {
+  it("transforms stdio server with implicit transport (no type field)", async () => {
+    const agent = await loadAgentById("gemini-cli");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.rootKey).toBe("mcpServers");
+    expect(result.format).toBe("json");
+
+    // Gemini CLI infers transport from command presence — no type field
+    expect(result.servers.github).not.toHaveProperty("type");
+    expect(result.servers.github).toEqual({
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-github"],
+      env: {
+        GITHUB_TOKEN: "${GITHUB_TOKEN}",
+      },
+    });
+  });
+
+  it("transforms http server with httpUrl key and no type field", async () => {
+    const agent = await loadAgentById("gemini-cli");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    // Gemini uses httpUrl instead of url, no type field
+    expect(result.servers.sentry).not.toHaveProperty("type");
+    expect(result.servers.sentry).not.toHaveProperty("url");
+    expect(result.servers.sentry).toEqual({
+      httpUrl: "https://mcp.sentry.dev/sse",
+      headers: {
+        Authorization: "Bearer ${SENTRY_TOKEN}",
+      },
+    });
+  });
+
+  it("snapshot: full Gemini CLI output", async () => {
+    const agent = await loadAgentById("gemini-cli");
+    const result = transformForAgent(sampleConfig, agent!);
+    expect(result).toMatchSnapshot();
+  });
+});
+
+describe("Cursor", () => {
+  it("transforms stdio server with ${env:VAR} syntax", async () => {
+    const agent = await loadAgentById("cursor");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.rootKey).toBe("mcpServers");
+    expect(result.format).toBe("json");
+    expect(result.servers.github).toEqual({
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-github"],
+      env: {
+        GITHUB_TOKEN: "${env:GITHUB_TOKEN}",
+      },
+    });
+  });
+
+  it("transforms http server with standard transport types", async () => {
+    const agent = await loadAgentById("cursor");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.servers.sentry).toEqual({
+      type: "http",
+      url: "https://mcp.sentry.dev/sse",
+      headers: {
+        Authorization: "Bearer ${env:SENTRY_TOKEN}",
+      },
+    });
+  });
+
+  it("snapshot: full Cursor output", async () => {
+    const agent = await loadAgentById("cursor");
+    const result = transformForAgent(sampleConfig, agent!);
+    expect(result).toMatchSnapshot();
+  });
+});
+
+describe("mergeJSON routing", () => {
+  it("agents with writeMode merge use mergeJSON in mcp-sync", async () => {
+    const opencode = await loadAgentById("opencode");
+    const gemini = await loadAgentById("gemini-cli");
+    const cursor = await loadAgentById("cursor");
+    const claudeCode = await loadAgentById("claude-code");
+
+    // merge writeMode agents
+    expect(opencode!.mcp.writeMode).toBe("merge");
+    expect(gemini!.mcp.writeMode).toBe("merge");
+
+    // standalone writeMode agents
+    expect(cursor!.mcp.writeMode).toBe("standalone");
+    expect(claudeCode!.mcp.writeMode).toBe("standalone");
+  });
+});
+
 describe("parseMCPConfigFromString", () => {
   it("parses valid mcp.json", () => {
     const input = JSON.stringify(sampleConfig);

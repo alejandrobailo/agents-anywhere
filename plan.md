@@ -118,7 +118,7 @@ Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their
       "Update schema-loader tests to expect 5 agent definitions (up from 2)",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-008",

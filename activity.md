@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 6/11
-**Current Task:** TEST-002
+**Tasks Completed:** 7/11
+**Current Task:** FEAT-008
 
 ---
 
@@ -185,3 +185,13 @@
 - Verified definition loads correctly via schema-loader tests
 - `npx tsc --noEmit` passes clean, all 64 tests pass
 - **Files:** agents/cursor.json
+
+### 2026-03-19 — TEST-002 (test)
+- Added snapshot tests for OpenCode, Gemini CLI, and Cursor MCP transformations
+- OpenCode tests: verify array command output [command, ...args], {env:VAR} syntax, local/remote transport types, mcp root key
+- Gemini CLI tests: verify ${VAR} syntax, omitted type fields (implicit transport), httpUrl for HTTP servers, mcpServers root key
+- Cursor tests: verify ${env:VAR} syntax, standard stdio/http transport types, mcpServers root key
+- Added mergeJSON routing test: verifies writeMode 'merge' on OpenCode/Gemini CLI and 'standalone' on Cursor/Claude Code
+- Updated schema-loader tests to expect exactly 5 agent definitions (claude-code, codex, opencode, gemini-cli, cursor)
+- `npx tsc --noEmit` passes clean, all 74 tests pass (64 existing + 10 new)
+- **Files:** src/mcp/__tests__/transformer.test.ts, src/core/__tests__/schema-loader.test.ts
