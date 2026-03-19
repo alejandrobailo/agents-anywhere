@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 3/9
-**Current Task:** TEST-005 — Add tests for --dry-run mode
+**Tasks Completed:** 4/9
+**Current Task:** FEAT-011 — Add JSON Schema validation for agent definition files
 
 ---
 
@@ -278,3 +278,11 @@
 - In `src/cli.ts`: wired `--dry-run` option to all three commands using Commander `.option()`
 - `npx tsc --noEmit` passes clean, all 101 tests pass
 - **Files:** src/core/linker.ts, src/commands/link.ts, src/commands/unlink.ts, src/commands/mcp-sync.ts, src/cli.ts
+
+### 2026-03-19 — TEST-005 (test)
+- Added dry-run tests for linkAgent and unlinkAgent in linker.test.ts
+- linkAgent dryRun tests: returns "linked" results without creating symlinks, returns "backed-up-and-linked" without creating backups or symlinks, handles directories correctly
+- unlinkAgent dryRun tests: returns "unlinked" without removing symlinks, returns "restored" without removing symlinks or restoring backups
+- Added e2e test: linkAgent with dryRun=true on Claude Code definition returns results but creates zero symlinks in config dir
+- `npx tsc --noEmit` passes clean, all 107 tests pass (101 existing + 6 new)
+- **Files:** src/core/__tests__/linker.test.ts, src/__tests__/e2e.test.ts

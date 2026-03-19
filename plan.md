@@ -74,7 +74,7 @@ Expand agent coverage with Windsurf. Add `agentsync export` for shareable instal
       "In src/__tests__/e2e.test.ts: add test calling linkAgent(agentDef, repoDir, true) then verify no symlinks exist in the config dir",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-011",

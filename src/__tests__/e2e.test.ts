@@ -413,6 +413,44 @@ describe("e2e: init → link → mcp sync → unlink", () => {
     expect(codexServers.github.env_vars).toEqual(["GITHUB_TOKEN"]);
   });
 
+  it("linkAgent with dryRun=true returns results but creates no symlinks", async () => {
+    await initCommand(repoDir);
+
+    // Create portable files in repo
+    fs.writeFileSync(
+      path.join(repoDir, "claude-code", "settings.json"),
+      '{"theme": "dark"}',
+    );
+    fs.writeFileSync(
+      path.join(repoDir, "claude-code", "CLAUDE.md"),
+      "# Claude Instructions",
+    );
+
+    const claudeDef = loadAgentById("claude-code")!;
+
+    // Dry-run link
+    const results = linkAgent(claudeDef, repoDir, true);
+
+    // Should return results describing what would happen
+    expect(results.length).toBeGreaterThan(0);
+    const settingsResult = results.find((r) => r.item === "settings.json");
+    expect(settingsResult?.action).toBe("linked");
+    const claudeMdResult = results.find((r) => r.item === "CLAUDE.md");
+    expect(claudeMdResult?.action).toBe("linked");
+
+    // But no symlinks should exist in the config dir
+    const claudeConfigDir = path.join(fakeHome, ".claude");
+    const entries = fs.readdirSync(claudeConfigDir);
+    const symlinks = entries.filter((e) => {
+      try {
+        return fs.lstatSync(path.join(claudeConfigDir, e)).isSymbolicLink();
+      } catch {
+        return false;
+      }
+    });
+    expect(symlinks).toHaveLength(0);
+  });
+
   it("mcpSyncCommand uses mergeJSON for merge-mode agents, preserving existing keys", async () => {
     await initCommand(repoDir);
 
