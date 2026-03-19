@@ -44,14 +44,16 @@ export function loadAgentDefinition(filePath: string): AgentDefinition {
 
 /**
  * Load all agent definitions from the bundled agents/ directory.
+ * Results are cached after first load.
  */
+let _cache: AgentDefinition[] | null = null;
+
 export function loadAllAgentDefinitions(): AgentDefinition[] {
+  if (_cache) return _cache;
   const agentsDir = getAgentsDir();
   const files = readdirSync(agentsDir).filter((f) => f.endsWith(".json"));
-
-  return files.map((file) =>
-    loadAgentDefinition(path.join(agentsDir, file)),
-  );
+  _cache = files.map((file) => loadAgentDefinition(path.join(agentsDir, file)));
+  return _cache;
 }
 
 /**
@@ -95,7 +97,7 @@ function validateAgentDefinition(
     );
   }
 
-  if (!def.mcp.configPath || !def.mcp.rootKey || !def.mcp.envSyntax) {
+  if (!def.mcp.configPath || !def.mcp.rootKey || !def.mcp.envSyntax || !def.mcp.writeMode || !def.mcp.commandType) {
     throw new Error(
       `Agent definition ${source} is missing required MCP fields`,
     );

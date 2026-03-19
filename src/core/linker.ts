@@ -7,7 +7,6 @@ import {
   unlinkSync,
   mkdirSync,
   readdirSync,
-  cpSync,
 } from "node:fs";
 import path from "node:path";
 import type { AgentDefinition } from "../schemas/agent-schema.js";
@@ -57,7 +56,7 @@ function resolvePaths(
  * Expands glob patterns like "commands/**" to just the directory name "commands".
  * Returns deduplicated list of top-level items.
  */
-function getPortableItems(agentDef: AgentDefinition): string[] {
+export function getPortableItems(agentDef: AgentDefinition): string[] {
   const items = new Set<string>();
   for (const pattern of agentDef.portable) {
     // "commands/**" → "commands", "settings.json" → "settings.json"

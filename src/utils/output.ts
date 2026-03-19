@@ -58,6 +58,7 @@ export function cyan(msg: string): string {
 
 /** Print a simple key-value table */
 export function table(rows: Array<[string, string]>, indent = 2): void {
+  if (rows.length === 0) return;
   const maxKey = Math.max(...rows.map(([k]) => k.length));
   const pad = " ".repeat(indent);
   for (const [key, value] of rows) {

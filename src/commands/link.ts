@@ -2,12 +2,11 @@
  * agentsync link [agent] — link agent configs from central repo to agent config dirs.
  */
 
-import * as fs from "node:fs";
-import path from "node:path";
 import { linkAgent } from "../core/linker.js";
 import { loadAgentById, loadAllAgentDefinitions } from "../core/schema-loader.js";
 import { heading, success, info, warn, error, dim } from "../utils/output.js";
-import { loadManifest, type Manifest } from "../utils/manifest.js";
+import { loadManifest } from "../utils/manifest.js";
+import type { AgentDefinition } from "../schemas/agent-schema.js";
 
 export async function linkCommand(agentId?: string): Promise<void> {
   const manifest = loadManifest();
@@ -28,7 +27,7 @@ export async function linkCommand(agentId?: string): Promise<void> {
       warn(`Agent "${agentId}" is not enabled in agentsync.json`);
       return;
     }
-    linkSingleAgent(agentDef.id, agentDef.name, repoDir);
+    linkSingleAgent(agentDef, repoDir);
   } else {
     // Link all enabled agents
     heading("Linking agent configs...");
@@ -47,19 +46,16 @@ export async function linkCommand(agentId?: string): Promise<void> {
         warn(`Agent "${id}" in manifest but no definition found — skipping`);
         continue;
       }
-      linkSingleAgent(agentDef.id, agentDef.name, repoDir);
+      linkSingleAgent(agentDef, repoDir);
     }
   }
 }
 
-function linkSingleAgent(id: string, name: string, repoDir: string): void {
-  const agentDef = loadAgentById(id);
-  if (!agentDef) return;
-
+function linkSingleAgent(agentDef: AgentDefinition, repoDir: string): void {
   const results = linkAgent(agentDef, repoDir);
 
   if (results.length === 0) {
-    info(`${name} — no portable files found in repo`);
+    info(`${agentDef.name} — no portable files found in repo`);
     return;
   }
 
@@ -69,9 +65,9 @@ function linkSingleAgent(id: string, name: string, repoDir: string): void {
   const items = results.map((r) => r.item).join(", ");
 
   if (linked.length > 0) {
-    success(`${name} — ${items} linked`);
-  } else if (skipped.length === results.length) {
-    info(`${name} — already linked ${dim("(skipped)")}`);
+    success(`${agentDef.name} — ${items} linked`);
+  } else if (results.length > 0 && skipped.length === results.length) {
+    info(`${agentDef.name} — already linked ${dim("(skipped)")}`);
   }
 
   for (const r of results) {

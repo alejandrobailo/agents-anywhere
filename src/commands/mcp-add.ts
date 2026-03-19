@@ -13,6 +13,7 @@ import type { NormalizedMCPConfig, NormalizedServer, EnvRef } from "../mcp/types
 import { loadManifest } from "../utils/manifest.js";
 import { success, error, info, warn } from "../utils/output.js";
 
+
 async function ask(
   rl: readline.Interface,
   question: string,
@@ -84,7 +85,10 @@ export async function mcpAddCommand(name: string): Promise<void> {
       const envName = await ask(rl, "  Env var name (or empty to finish): ");
       if (!envName) break;
       const envVar = await ask(rl, `  Shell variable for ${envName}: `);
-      if (!envVar) break;
+      if (!envVar) {
+        warn(`Skipping env var "${envName}" — no value provided`);
+        continue;
+      }
       envVars[envName] = { $env: envVar };
     }
     if (Object.keys(envVars).length > 0) {

@@ -12,6 +12,7 @@ import * as fs from "node:fs";
 import path from "node:path";
 import type { AgentDefinition } from "../schemas/agent-schema.js";
 import { loadAgentById } from "../core/schema-loader.js";
+import { getPortableItems } from "../core/linker.js";
 import { loadManifest } from "../utils/manifest.js";
 import { expandPath, getPlatformPath } from "../utils/paths.js";
 import { heading, success, error, warn, dim } from "../utils/output.js";
@@ -20,18 +21,6 @@ export interface Issue {
   agent: string;
   message: string;
   fix: string;
-}
-
-/**
- * Get top-level portable item names from glob patterns.
- * "commands/**" → "commands", "settings.json" → "settings.json"
- */
-function getPortableItems(agentDef: AgentDefinition): string[] {
-  const items = new Set<string>();
-  for (const pattern of agentDef.portable) {
-    items.add(pattern.split("/")[0]);
-  }
-  return [...items];
 }
 
 /**
