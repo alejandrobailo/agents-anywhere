@@ -103,7 +103,7 @@ Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their
       "Verify the definition loads correctly with schema-loader",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-002",

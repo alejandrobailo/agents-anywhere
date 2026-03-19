@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 5/11
-**Current Task:** AGENT-003
+**Tasks Completed:** 6/11
+**Current Task:** TEST-002
 
 ---
 
@@ -173,3 +173,15 @@
 - Verified definition loads correctly via schema-loader tests
 - `npx tsc --noEmit` passes clean, all 64 tests pass
 - **Files:** agents/gemini-cli.json
+
+### 2026-03-19 — AGENT-003 (feature)
+- Created Cursor agent definition (agents/cursor.json)
+- Configured ${env:VAR} env syntax, inline envVarStyle, standalone writeMode
+- configDir: ~/.cursor (darwin/linux), %APPDATA%/cursor (win32)
+- MCP: standalone writeMode, 'mcpServers' rootKey, JSON format, string commandType
+- Transports: stdio → { type: 'stdio' }, http → { type: 'http' }
+- Credentials: [] (stored in app, not config dir)
+- Portable files: rules/**
+- Verified definition loads correctly via schema-loader tests
+- `npx tsc --noEmit` passes clean, all 64 tests pass
+- **Files:** agents/cursor.json

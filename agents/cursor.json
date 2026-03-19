@@ -1,0 +1,43 @@
+{
+  "id": "cursor",
+  "name": "Cursor",
+  "configDir": {
+    "darwin": "~/.cursor",
+    "linux": "~/.cursor",
+    "win32": "%APPDATA%/cursor"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.cursor"
+  },
+  "portable": [
+    "rules/**"
+  ],
+  "ignore": [
+    "sessions/**",
+    "cache/**",
+    "extensions/**",
+    "logs/**",
+    "*.backup.*"
+  ],
+  "credentials": [],
+  "instructions": {
+    "filename": "rules",
+    "globalPath": "~/.cursor/rules"
+  },
+  "mcp": {
+    "configPath": "mcp.json",
+    "scope": "user",
+    "rootKey": "mcpServers",
+    "format": "json",
+    "writeMode": "standalone",
+    "envSyntax": "${env:VAR}",
+    "transports": {
+      "stdio": { "typeField": "type", "typeValue": "stdio" },
+      "http": { "typeField": "type", "typeValue": "http" }
+    },
+    "commandType": "string",
+    "envKey": "env",
+    "envVarStyle": "inline"
+  }
+}
