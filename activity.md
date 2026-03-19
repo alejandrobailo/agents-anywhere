@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 1/11
-**Current Task:** XFORM-001
+**Tasks Completed:** 2/11
+**Current Task:** SYNC-001
 
 ---
 
@@ -136,3 +136,10 @@
 - Added writeMode 'standalone' to claude-code.json, writeMode 'merge' to codex.json
 - `npx tsc --noEmit` passes clean, all 57 tests pass
 - **Files:** src/schemas/agent-schema.ts, src/mcp/transformer.ts, agents/claude-code.json, agents/codex.json
+
+### 2026-03-19 — XFORM-001 (feature)
+- Updated transformer to support array command type: when commandType === 'array', outputs command as [command, ...args] with no separate args field
+- urlKey and optional typeField support were already implemented in SCHEMA-001
+- Added 7 new test cases covering: array command output (with/without args), custom urlKey ('httpUrl'), omitted type fields (implicit transport), env syntax with array commands, transport type values
+- `npx tsc --noEmit` passes clean, all 64 tests pass (57 existing + 7 new)
+- **Files:** src/mcp/transformer.ts, src/mcp/__tests__/transformer.test.ts

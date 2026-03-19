@@ -39,7 +39,7 @@ Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their
       "Add test cases in src/mcp/__tests__/transformer.test.ts: array command output, custom urlKey ('httpUrl'), omitted type field",
       "Run npx tsc --noEmit and npx vitest run"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SYNC-001",

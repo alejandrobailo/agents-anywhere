@@ -65,9 +65,14 @@ function transformServerInline(
   }
 
   if (server.transport === "stdio") {
-    result.command = server.command;
-    if (server.args?.length) {
-      result.args = server.args;
+    if (mcp.commandType === "array") {
+      // Array command: combine command + args into a single array, no separate args field
+      result.command = [server.command, ...(server.args ?? [])];
+    } else {
+      result.command = server.command;
+      if (server.args?.length) {
+        result.args = server.args;
+      }
     }
   } else if (server.transport === "http") {
     const urlKey = transportDef?.urlKey ?? "url";
