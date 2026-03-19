@@ -119,7 +119,7 @@ Expand agent coverage with Windsurf. Add `agentsync export` for shareable instal
       "Wire up in src/cli.ts as 'agentsync export'",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-007",

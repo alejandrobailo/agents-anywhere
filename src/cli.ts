@@ -14,6 +14,7 @@ import { mcpListCommand } from "./commands/mcp-list.js";
 import { mcpDiffCommand } from "./commands/mcp-diff.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { validateCommand } from "./commands/validate.js";
+import { exportCommand } from "./commands/export.js";
 
 const program = new Command();
 
@@ -76,6 +77,15 @@ program
   .description("Validate all bundled agent definition JSON files against the schema")
   .action(async () => {
     await validateCommand();
+  });
+
+program
+  .command("export")
+  .description(
+    "Generate a standalone install script (pure bash, no agentsync needed)",
+  )
+  .action(async () => {
+    await exportCommand();
   });
 
 const mcp = program

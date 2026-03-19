@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 6/9
-**Current Task:** FEAT-012 — Implement `agentsync export` command
+**Tasks Completed:** 7/9
+**Current Task:** TEST-007 — Add tests for export command
 
 ---
 
@@ -309,3 +309,14 @@
 - Test missing required platform paths in configDir (linux, win32)
 - `npx tsc --noEmit` passes clean, all 122 tests pass (107 existing + 15 new)
 - **Files:** src/core/__tests__/schema-loader.test.ts
+
+### 2026-03-19 — FEAT-012 (feature)
+- Implemented `agentsync export` command to generate a standalone install script
+- Created src/commands/export.ts with exportCommand() and generateExportScript() (exported for testability)
+- Reads agentsync.json manifest and mcp.json, transforms MCP configs for each enabled agent
+- Generates a self-contained bash script that: creates config repo directory structure, writes mcp.json inline, writes pre-transformed per-agent MCP configs inline (JSON and TOML), creates symlinks for portable files with backup of existing files
+- Paths use $HOME for portability across machines
+- Script outputs to stdout for redirection (agentsync export > install.sh)
+- Wired up in src/cli.ts as `agentsync export`
+- `npx tsc --noEmit` passes clean, all 122 tests pass
+- **Files:** src/commands/export.ts, src/cli.ts
