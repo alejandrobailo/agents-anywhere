@@ -193,15 +193,18 @@ To add support for a new agent, create a JSON file in `agents/`:
   },
   "mcp": {
     "configPath": "mcp.json",
+    "scope": "user",
     "rootKey": "mcpServers",
     "format": "json",
+    "writeMode": "standalone",
     "envSyntax": "${VAR}",
     "transports": {
       "stdio": { "typeField": "type", "typeValue": "stdio" },
       "http": { "typeField": "type", "typeValue": "http" }
     },
     "commandType": "string",
-    "envKey": "env"
+    "envKey": "env",
+    "envVarStyle": "inline"
   }
 }
 ```
