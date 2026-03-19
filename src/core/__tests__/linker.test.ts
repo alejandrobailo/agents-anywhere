@@ -39,12 +39,15 @@ function makeAgentDef(overrides: Partial<AgentDefinition> = {}): AgentDefinition
       configPath: "mcp.json",
       scope: "user",
       rootKey: "mcpServers",
+      format: "json",
+      writeMode: "standalone",
       envSyntax: "${VAR}",
       transports: {
         stdio: { typeField: "type", typeValue: "stdio" },
       },
       commandType: "string",
       envKey: "env",
+      envVarStyle: "inline",
     },
     ...overrides,
   };
