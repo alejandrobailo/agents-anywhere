@@ -1,10 +1,10 @@
-# agentsync - Activity Log (Phase 2 v0.2.0)
+# agentsync - Activity Log (Phase 3 v0.3.0)
 
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 11/11
-**Current Task:** ALL COMPLETE
+**Tasks Completed:** 1/9
+**Current Task:** TEST-004 — Add snapshot tests for Windsurf MCP transformation
 
 ---
 
@@ -235,3 +235,26 @@
 - `npx tsc --noEmit` passes clean, all 96 tests pass
 - `npm pack --dry-run` confirms agents/opencode.json, agents/gemini-cli.json, agents/cursor.json included
 - **Files:** README.md, package.json, src/version.ts, plan.md, activity.md
+
+### 2026-03-19 — Code Review Fixes (post-release)
+- Fixed 10 code review issues across critical, high, and medium severity
+- Critical: version hardcoded as "0.1.0" → now uses version.ts; program.parse() → parseAsync() with error handler
+- High: writeTOML parameterized with rootKey; mcp-diff uses serverSection/rootKey for TOML; mergeJSON try/catch; resolveEnvRef guards against missing VAR placeholder
+- Medium: removed dead imports in link.ts/unlink.ts; refactored link/unlink to pass AgentDefinition directly (eliminating redundant loadAgentById calls); added loadAllAgentDefinitions cache; validated writeMode/commandType in schema-loader; guarded table() empty array; exported getPortableItems from linker (deduplicated from doctor); APPDATA throws on win32; manifest try/catch + always derives repoDir from file location (path traversal fix); mcp-add env var loop break→warn+continue
+- Removed unused yaml dependency
+- Test fixes: writeTOML calls updated for new signature; temp dirs moved to os.tmpdir(); added mcpSyncCommand integration test and mergeJSON routing test (98 tests total)
+- Created DEVELOPMENT.md developer guide
+- Updated README.md agent definition example with scope, writeMode, envVarStyle fields
+- **Files:** src/cli.ts, src/mcp/writer.ts, src/commands/mcp-sync.ts, src/commands/mcp-diff.ts, src/mcp/transformer.ts, src/commands/link.ts, src/commands/unlink.ts, src/commands/doctor.ts, src/commands/mcp-add.ts, src/core/linker.ts, src/core/schema-loader.ts, src/utils/output.ts, src/utils/manifest.ts, src/utils/paths.ts, package.json, src/mcp/__tests__/writer.test.ts, src/commands/__tests__/doctor.test.ts, src/__tests__/e2e.test.ts, README.md, DEVELOPMENT.md
+
+### 2026-03-19 — AGENT-004 (feature)
+- Created Windsurf agent definition (agents/windsurf.json)
+- Configured ${env:VAR} env syntax, inline envVarStyle, standalone writeMode
+- configDir: ~/.codeium/windsurf (darwin/linux), %APPDATA%/codeium/windsurf (win32)
+- MCP: standalone writeMode, 'mcpServers' rootKey, JSON format, string commandType
+- HTTP transport uses 'serverUrl' as URL key instead of standard 'url'
+- Transports: stdio → { type: 'stdio' }, http → { type: 'http', urlKey: 'serverUrl' }
+- Portable files: mcp_config.json, memories/**, rules/**
+- Updated schema-loader tests to expect 6 agent definitions (up from 5)
+- `npx tsc --noEmit` passes clean, all 98 tests pass
+- **Files:** agents/windsurf.json, src/core/__tests__/schema-loader.test.ts

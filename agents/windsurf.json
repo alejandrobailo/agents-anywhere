@@ -1,0 +1,44 @@
+{
+  "id": "windsurf",
+  "name": "Windsurf",
+  "configDir": {
+    "darwin": "~/.codeium/windsurf",
+    "linux": "~/.codeium/windsurf",
+    "win32": "%APPDATA%/codeium/windsurf"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.codeium/windsurf"
+  },
+  "portable": [
+    "mcp_config.json",
+    "memories/**",
+    "rules/**"
+  ],
+  "ignore": [
+    "cache/**",
+    "logs/**",
+    "sessions/**",
+    "*.backup.*"
+  ],
+  "credentials": [],
+  "instructions": {
+    "filename": "rules",
+    "globalPath": "~/.codeium/windsurf/rules"
+  },
+  "mcp": {
+    "configPath": "mcp_config.json",
+    "scope": "user",
+    "rootKey": "mcpServers",
+    "format": "json",
+    "writeMode": "standalone",
+    "envSyntax": "${env:VAR}",
+    "transports": {
+      "stdio": { "typeField": "type", "typeValue": "stdio" },
+      "http": { "typeField": "type", "typeValue": "http", "urlKey": "serverUrl" }
+    },
+    "commandType": "string",
+    "envKey": "env",
+    "envVarStyle": "inline"
+  }
+}

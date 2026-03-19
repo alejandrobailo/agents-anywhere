@@ -1,11 +1,11 @@
-# agentsync Phase 2: Multi-Agent Support (v0.2.0)
+# agentsync Phase 3: Polish (v0.3.0)
 
 ## Overview
 
-Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their unique MCP config formats. Add diagnostic commands (`doctor`, `mcp diff`). Requires updates to the transformer, writer routing, and schema to handle new patterns: array commands, custom URL keys, optional transport type fields, and JSON merge write mode.
+Expand agent coverage with Windsurf. Add `agentsync export` for shareable install scripts, JSON Schema validation for agent definitions, and `--dry-run` mode across all mutating commands. Improve robustness and developer experience.
 
-**Reference:** `PRD.md` (Phase 2 section)
-**Prereq:** v0.1.0 MVP complete (all 57 tests passing)
+**Reference:** `PRD.md` (Phase 3 section), `DEVELOPMENT.md` (architecture + conventions)
+**Prereq:** v0.2.0 complete (98 tests passing, 5 agents supported)
 
 ---
 
@@ -14,174 +14,144 @@ Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their
 ```json
 [
   {
-    "id": "SCHEMA-001",
-    "category": "setup",
-    "priority": 1,
-    "description": "Update TypeScript types to support Phase 2 agent config patterns",
-    "steps": [
-      "In src/schemas/agent-schema.ts, make TransportConfig.typeField and typeValue optional (some agents like Gemini omit the type field for stdio)",
-      "Add optional urlKey?: string to TransportConfig (Gemini uses 'httpUrl' instead of 'url' for HTTP servers)",
-      "Add writeMode: 'standalone' | 'merge' to MCPConfig ('standalone' = writeJSON overwrites entire file, 'merge' = mergeJSON preserves non-MCP keys)",
-      "Update existing agent definitions: add writeMode 'standalone' to claude-code.json, add writeMode 'merge' to codex.json (TOML merge is already handled by format field, but explicit writeMode makes routing clearer)",
-      "Run npx tsc --noEmit to verify types are clean"
-    ],
-    "passes": true
-  },
-  {
-    "id": "XFORM-001",
+    "id": "AGENT-004",
     "category": "feature",
-    "priority": 2,
-    "description": "Update transformer to handle array commands, custom URL keys, and optional type fields",
+    "priority": 1,
+    "description": "Create Windsurf agent definition (windsurf.json)",
     "steps": [
-      "In src/mcp/transformer.ts transformServerInline(): when mcp.commandType === 'array', output command as [server.command, ...server.args] with no separate args field",
-      "In transformServerInline(): use transportDef.urlKey (fallback 'url') for the HTTP URL field name instead of hardcoded 'url'",
-      "In transformServerInline() and transformServerNamed(): skip setting type field when transportDef.typeField is undefined/empty",
-      "Add test cases in src/mcp/__tests__/transformer.test.ts: array command output, custom urlKey ('httpUrl'), omitted type field",
-      "Run npx tsc --noEmit and npx vitest run"
+      "Create agents/windsurf.json following the existing pattern in agents/cursor.json",
+      "id: 'windsurf', name: 'Windsurf'",
+      "configDir: darwin '~/.codeium/windsurf', linux '~/.codeium/windsurf', win32 '%APPDATA%/codeium/windsurf'",
+      "detect: directory-exists at '~/.codeium/windsurf'",
+      "portable: ['mcp_config.json', 'memories/**', 'rules/**']",
+      "ignore: ['cache/**', 'logs/**', 'sessions/**', '*.backup.*']",
+      "credentials: []",
+      "instructions: { filename: 'rules', globalPath: '~/.codeium/windsurf/rules' }",
+      "mcp: configPath 'mcp_config.json', scope 'user', rootKey 'mcpServers', format 'json', writeMode 'standalone', envSyntax '${env:VAR}', envVarStyle 'inline', commandType 'string', envKey 'env'",
+      "transports: stdio → { typeField: 'type', typeValue: 'stdio' }, http → { typeField: 'type', typeValue: 'http', urlKey: 'serverUrl' }",
+      "Verify the definition loads correctly: run npx tsc --noEmit && npx vitest run"
     ],
     "passes": true
   },
   {
-    "id": "SYNC-001",
+    "id": "TEST-004",
+    "category": "test",
+    "priority": 2,
+    "description": "Add snapshot tests for Windsurf MCP transformation",
+    "steps": [
+      "In src/mcp/__tests__/transformer.test.ts, add describe('Windsurf') block",
+      "Test stdio server: verify ${env:VAR} syntax, standard transport types, mcpServers root key",
+      "Test http server: verify serverUrl key for HTTP URL (not 'url'), standard transport type",
+      "Add snapshot test for full Windsurf output",
+      "Update schema-loader tests to expect 6 agent definitions (up from 5)",
+      "Run npx vitest run — all tests must pass"
+    ],
+    "passes": false
+  },
+  {
+    "id": "FEAT-010",
     "category": "feature",
     "priority": 3,
-    "description": "Update mcp-sync command to support mergeJSON write mode for agents that share config files",
+    "description": "Add --dry-run flag to all mutating commands (link, unlink, mcp sync)",
     "steps": [
-      "In src/commands/mcp-sync.ts, import mergeJSON from writer.ts",
-      "Update the write routing: if format === 'toml' → writeTOML, else if writeMode === 'merge' → mergeJSON(targetPath, rootKey, servers), else → writeJSON(targetPath, rootKey, servers)",
+      "Add a --dry-run option to the 'link', 'unlink', and 'mcp sync' commands in src/cli.ts",
+      "In src/core/linker.ts: add a dryRun parameter to linkAgent() and unlinkAgent(). When true, compute results without calling symlinkSync, renameSync, unlinkSync, or mkdirSync. Return the same LinkResult[]/UnlinkResult[] arrays so the caller can display what would happen.",
+      "In src/commands/link.ts: accept dryRun option, pass to linkAgent(), prefix output with '[dry-run]' when active",
+      "In src/commands/unlink.ts: accept dryRun option, pass to unlinkAgent(), prefix output with '[dry-run]'",
+      "In src/commands/mcp-sync.ts: accept dryRun option, skip writer calls (writeJSON/mergeJSON/writeTOML) when true, show what files would be written",
       "Run npx tsc --noEmit"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "AGENT-001",
-    "category": "feature",
+    "id": "TEST-005",
+    "category": "test",
     "priority": 4,
-    "description": "Create OpenCode agent definition (opencode.json) with array commands and {env:VAR} syntax",
+    "description": "Add tests for --dry-run mode",
     "steps": [
-      "Create agents/opencode.json with: id 'opencode', name 'OpenCode'",
-      "configDir: darwin/linux '~/.config/opencode', win32 '%APPDATA%/opencode'",
-      "detect: directory-exists at '~/.config/opencode'",
-      "portable: ['opencode.json', 'AGENTS.md']",
-      "mcp: configPath 'opencode.json', writeMode 'merge', rootKey 'mcp', format 'json', envSyntax '{env:VAR}', envVarStyle 'inline', commandType 'array', envKey 'env'",
-      "transports: stdio → { typeField: 'type', typeValue: 'local' }, http → { typeField: 'type', typeValue: 'remote', urlKey: 'url' }",
-      "Verify the definition loads correctly with schema-loader",
-      "Run npx tsc --noEmit"
+      "In src/core/__tests__/linker.test.ts: add tests verifying linkAgent with dryRun=true returns results but does NOT create symlinks on disk",
+      "Add test verifying unlinkAgent with dryRun=true returns results but does NOT remove symlinks or restore backups",
+      "In src/__tests__/e2e.test.ts: add test calling linkAgent(agentDef, repoDir, true) then verify no symlinks exist in the config dir",
+      "Run npx vitest run — all tests must pass"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "AGENT-002",
+    "id": "FEAT-011",
     "category": "feature",
     "priority": 5,
-    "description": "Create Gemini CLI agent definition (gemini-cli.json) with implicit transport and httpUrl",
+    "description": "Add JSON Schema validation for agent definition files",
     "steps": [
-      "Create agents/gemini-cli.json with: id 'gemini-cli', name 'Gemini CLI'",
-      "configDir: darwin/linux '~/.gemini', win32 '%APPDATA%/gemini'",
-      "detect: directory-exists at '~/.gemini'",
-      "portable: ['settings.json', 'GEMINI.md']",
-      "mcp: configPath 'settings.json', writeMode 'merge', rootKey 'mcpServers', format 'json', envSyntax '${VAR}', envVarStyle 'inline', commandType 'string', envKey 'env'",
-      "transports: stdio → {} (no type field — Gemini infers from command presence), http → { urlKey: 'httpUrl' } (no type field, URL field is 'httpUrl')",
-      "Verify the definition loads correctly with schema-loader",
+      "Create src/schemas/agent-definition.schema.json — a JSON Schema (draft-07) describing the full AgentDefinition structure: required fields (id, name, configDir, detect, portable, ignore, credentials, instructions, mcp), nested object shapes (PlatformPaths, DetectRule, MCPConfig, TransportMap), enums (writeMode, commandType, scope, format, envVarStyle, detect.type)",
+      "In src/core/schema-loader.ts: import the JSON schema and use a lightweight validator. Since we want zero new dependencies, implement a simple validateAgainstSchema() function that checks: required fields exist, field types match (string, object, array), enum values are valid. This replaces the current hand-rolled validateAgentDefinition().",
+      "The new validation should catch all current checks plus: missing envKey, missing transports, invalid enum values for writeMode/commandType/scope/format/envVarStyle",
+      "Add a CLI command 'agentsync validate' in src/cli.ts that loads all agent definitions and reports validation results — useful for contributors testing their agent JSON",
+      "Create src/commands/validate.ts implementing the validateCommand()",
       "Run npx tsc --noEmit"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "AGENT-003",
-    "category": "feature",
+    "id": "TEST-006",
+    "category": "test",
     "priority": 6,
-    "description": "Create Cursor agent definition (cursor.json) with ${env:VAR} syntax",
+    "description": "Add tests for JSON Schema validation",
     "steps": [
-      "Create agents/cursor.json with: id 'cursor', name 'Cursor'",
-      "configDir: darwin/linux '~/.cursor', win32 '%APPDATA%/cursor'",
-      "detect: directory-exists at '~/.cursor'",
-      "portable: ['rules/**']",
-      "mcp: configPath 'mcp.json', writeMode 'standalone', rootKey 'mcpServers', format 'json', envSyntax '${env:VAR}', envVarStyle 'inline', commandType 'string', envKey 'env'",
-      "transports: stdio → { typeField: 'type', typeValue: 'stdio' }, http → { typeField: 'type', typeValue: 'http' }",
-      "credentials: [] (Cursor credentials stored in app, not config dir)",
-      "Verify the definition loads correctly with schema-loader",
-      "Run npx tsc --noEmit"
+      "In src/core/__tests__/schema-loader.test.ts: add tests for the new schema validation — missing required fields, invalid enum values, wrong types",
+      "Test that all 6 bundled agent definitions pass validation",
+      "Test that a definition with writeMode 'invalid' is rejected",
+      "Test that a definition missing 'transports' is rejected",
+      "Run npx vitest run — all tests must pass"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "TEST-002",
-    "category": "test",
+    "id": "FEAT-012",
+    "category": "feature",
     "priority": 7,
-    "description": "Add snapshot tests for OpenCode, Gemini CLI, and Cursor MCP transformations",
+    "description": "Implement `agentsync export` command to generate a standalone install script",
     "steps": [
-      "In src/mcp/__tests__/transformer.test.ts, add test suite for OpenCode: verify array command output [command, ...args], {env:VAR} syntax, local/remote transport types, mcp root key",
-      "Add test suite for Gemini CLI: verify ${VAR} syntax, omitted type fields, httpUrl for HTTP servers, mcpServers root key",
-      "Add test suite for Cursor: verify ${env:VAR} syntax, standard transport types, mcpServers root key",
-      "Add test for mergeJSON routing: ensure mcp-sync would call mergeJSON for agents with writeMode 'merge'",
-      "Update schema-loader tests to expect 5 agent definitions (up from 2)",
-      "Run npx vitest run — all tests must pass"
-    ],
-    "passes": true
-  },
-  {
-    "id": "FEAT-008",
-    "category": "feature",
-    "priority": 8,
-    "description": "Implement `agentsync doctor` command for diagnosing config health",
-    "steps": [
-      "Create src/commands/doctor.ts",
-      "Check 1 — Broken symlinks: for each enabled agent, check if symlinked files point to valid targets",
-      "Check 2 — Credentials in repo: scan repo dir for files matching agent credential patterns (e.g. ~/.claude.json accidentally copied)",
-      "Check 3 — Stale configs: for each linked agent, check if symlink targets actually exist in repo",
-      "Check 4 — MCP config freshness: compare mcp.json mtime vs generated MCP file mtimes, warn if generated files are older",
-      "Show colored diagnostic output: ✓ for healthy, ✗ for issues, with fix suggestions",
-      "Wire up in src/cli.ts as 'agentsync doctor'",
+      "Create src/commands/export.ts",
+      "The command reads the current agentsync.json manifest and mcp.json",
+      "Generates a self-contained shell script (install.sh) that: creates the config repo directory structure, writes mcp.json content inline, writes per-agent MCP configs inline (pre-transformed), creates symlinks for portable files",
+      "The script should be runnable without agentsync installed — pure bash",
+      "Output the script to stdout (user can redirect: agentsync export > install.sh)",
+      "Wire up in src/cli.ts as 'agentsync export'",
       "Run npx tsc --noEmit"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "FEAT-009",
-    "category": "feature",
-    "priority": 9,
-    "description": "Implement `agentsync mcp diff` command to preview MCP sync changes",
-    "steps": [
-      "Create src/commands/mcp-diff.ts",
-      "Parse mcp.json and transform for each enabled agent (reuse transformForAgent)",
-      "Read existing agent MCP config files (if they exist)",
-      "For JSON: compare serialized JSON strings, show added/removed/changed servers",
-      "For TOML: compare serialized TOML strings for the mcp_servers section only",
-      "Show colored diff output per agent: green for additions, red for removals, yellow for changes",
-      "If no changes, show 'All agents up to date'",
-      "Wire up in src/cli.ts as 'agentsync mcp diff'",
-      "Run npx tsc --noEmit"
-    ],
-    "passes": true
-  },
-  {
-    "id": "TEST-003",
+    "id": "TEST-007",
     "category": "test",
-    "priority": 10,
-    "description": "Add tests for doctor and mcp diff commands",
+    "priority": 8,
+    "description": "Add tests for export command",
     "steps": [
-      "Create src/commands/__tests__/doctor.test.ts — test broken symlink detection, credential detection, stale config detection",
-      "Create src/commands/__tests__/mcp-diff.test.ts — test diff output when configs are in sync, when servers added/removed, when no existing config",
-      "Use tmp directories with controlled filesystem state for reliable testing",
+      "Create src/commands/__tests__/export.test.ts",
+      "Test that the generated script contains the expected mcp.json content",
+      "Test that the script includes mkdir -p calls for agent config dirs",
+      "Test that the script includes symlink creation for portable files",
+      "Test that the script is valid bash (starts with #!/bin/bash, no syntax errors in template)",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "RELEASE-001",
+    "id": "RELEASE-002",
     "category": "release",
-    "priority": 11,
-    "description": "Update README, bump version to 0.2.0, verify package",
+    "priority": 9,
+    "description": "Update README, bump version to 0.3.0, verify package",
     "steps": [
-      "Update README.md supported agents table: add OpenCode, Gemini CLI, Cursor with their config details",
-      "Add doctor and mcp diff to the commands table in README.md",
-      "Bump version in package.json to 0.2.0",
+      "Update README.md supported agents table: add Windsurf with config details",
+      "Add 'export' and 'validate' to the commands table in README.md",
+      "Document --dry-run flag in the commands section",
+      "Bump version in package.json and src/version.ts to 0.3.0",
+      "Update DEVELOPMENT.md if any new patterns were introduced",
       "Run npx tsc --noEmit",
       "Run npx vitest run — all tests must pass",
-      "Run npm pack --dry-run — verify agents/opencode.json, agents/gemini-cli.json, agents/cursor.json included"
+      "Run npm pack --dry-run — verify agents/windsurf.json is included"
     ],
-    "passes": true
+    "passes": false
   }
 ]
 ```
