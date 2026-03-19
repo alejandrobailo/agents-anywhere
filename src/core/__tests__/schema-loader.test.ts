@@ -290,5 +290,45 @@ describe("schema-loader", () => {
         result.errors.some((e) => e.message.includes('"win32"')),
       ).toBe(true);
     });
+
+    it("rejects an extra top-level property", () => {
+      const def = validDefinition() as Record<string, unknown>;
+      def.extraField = "not allowed";
+      const result = validateAgainstSchema(def);
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some(
+          (e) => e.path === "extraField" && e.message.includes("not allowed"),
+        ),
+      ).toBe(true);
+    });
+
+    it("rejects an extra property inside mcp", () => {
+      const def = validDefinition();
+      (def.mcp as Record<string, unknown>).unknownKey = "bad";
+      const result = validateAgainstSchema(def);
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some(
+          (e) =>
+            e.path === "mcp.unknownKey" &&
+            e.message.includes("not allowed"),
+        ),
+      ).toBe(true);
+    });
+
+    it("rejects an extra property inside configDir", () => {
+      const def = validDefinition();
+      (def.configDir as Record<string, unknown>).freebsd = "~/.test-agent";
+      const result = validateAgainstSchema(def);
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some(
+          (e) =>
+            e.path === "configDir.freebsd" &&
+            e.message.includes("not allowed"),
+        ),
+      ).toBe(true);
+    });
   });
 });
