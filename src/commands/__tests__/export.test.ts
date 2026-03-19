@@ -221,6 +221,56 @@ describe("generateExportScript", () => {
     expect(script).toContain("AGENTSYNC_EOF_TEST_AGENT");
   });
 
+  it("uses a different delimiter when content contains the default delimiter", () => {
+    const agentDef = makeAgent({ id: "test-agent", name: "Test Agent" });
+    // MCP content that contains the literal default delimiter on its own line
+    const mcpContent =
+      '{"mcpServers":{}}\nAGENTSYNC_EOF_TEST_AGENT\nmore content\n';
+
+    const agentInfo: AgentExportInfo = {
+      agentDef,
+      configDir: path.join(tmpDir, "agent-config"),
+      mcpTargetPath: path.join(tmpDir, "agent-config", ".mcp.json"),
+      mcpContent,
+      portableItems: [],
+    };
+
+    const script = generateExportScript(tmpDir, "{}", [agentInfo]);
+
+    // The script should NOT use the colliding delimiter verbatim as a heredoc boundary
+    const heredocOpeners = script.match(/<< '(\w+)'/g) || [];
+    for (const opener of heredocOpeners) {
+      const delimiter = opener.replace("<< '", "").replace("'", "");
+      // Ensure the delimiter appears exactly twice: once as opener, once as closer
+      const closerRegex = new RegExp(`^${delimiter}$`, "gm");
+      const matches = script.match(closerRegex) || [];
+      // One occurrence as standalone closing line
+      expect(matches.length).toBeGreaterThanOrEqual(1);
+    }
+
+    // The heredoc should still be well-formed: every opener has a closer
+    for (const opener of heredocOpeners) {
+      const delimiter = opener.replace("<< '", "").replace("'", "");
+      const closerRegex = new RegExp(`^${delimiter}$`, "m");
+      expect(script).toMatch(closerRegex);
+    }
+  });
+
+  it("uses a different delimiter when mcp.json content contains AGENTSYNC_MCP_EOF", () => {
+    const mcpRaw = '{"note": "AGENTSYNC_MCP_EOF"}\nAGENTSYNC_MCP_EOF\ntrailing';
+
+    const script = generateExportScript(tmpDir, mcpRaw, []);
+
+    // The mcp heredoc delimiter should have been changed
+    const heredocOpeners = script.match(/<< '(\w+)'/g) || [];
+    expect(heredocOpeners.length).toBeGreaterThanOrEqual(1);
+    for (const opener of heredocOpeners) {
+      const delimiter = opener.replace("<< '", "").replace("'", "");
+      const closerRegex = new RegExp(`^${delimiter}$`, "m");
+      expect(script).toMatch(closerRegex);
+    }
+  });
+
   it("generates a well-formed bash script (no unclosed quotes or heredocs)", () => {
     const mcpRaw = JSON.stringify(
       {

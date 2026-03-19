@@ -88,13 +88,30 @@ export async function exportCommand(): Promise<void> {
 
 /**
  * Replace the user's home directory with $HOME for portability.
+ * Normalizes backslashes to forward slashes for Windows compatibility.
  */
 function makePortablePath(p: string): string {
-  const home = os.homedir();
-  if (p.startsWith(home + "/") || p === home) {
-    return "$HOME" + p.slice(home.length);
+  const normalized = p.replace(/\\/g, "/");
+  const home = os.homedir().replace(/\\/g, "/");
+  if (normalized.startsWith(home + "/") || normalized === home) {
+    return "$HOME" + normalized.slice(home.length);
   }
-  return p;
+  return normalized;
+}
+
+/**
+ * Generate a heredoc delimiter that does not collide with the content.
+ */
+function safeDelimiter(base: string, content: string): string {
+  let delimiter = base;
+  while (
+    content.includes(`\n${delimiter}\n`) ||
+    content.startsWith(`${delimiter}\n`) ||
+    content.endsWith(`\n${delimiter}`)
+  ) {
+    delimiter = `${base}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  }
+  return delimiter;
 }
 
 /**
@@ -132,15 +149,17 @@ export function generateExportScript(
   lines.push("");
 
   // Write mcp.json
+  const mcpDelimiter = safeDelimiter("AGENTSYNC_MCP_EOF", mcpRaw);
   lines.push("# Write normalized mcp.json");
-  lines.push("cat > \"$REPO_DIR/mcp.json\" << 'AGENTSYNC_MCP_EOF'");
+  lines.push(`cat > "$REPO_DIR/mcp.json" << '${mcpDelimiter}'`);
   lines.push(mcpRaw.trimEnd());
-  lines.push("AGENTSYNC_MCP_EOF");
+  lines.push(mcpDelimiter);
   lines.push("");
 
   // Per-agent sections
   for (const agent of agents) {
-    const eof = `AGENTSYNC_EOF_${agent.agentDef.id.toUpperCase().replace(/-/g, "_")}`;
+    const eofBase = `AGENTSYNC_EOF_${agent.agentDef.id.toUpperCase().replace(/-/g, "_")}`;
+    const eof = safeDelimiter(eofBase, agent.mcpContent);
     const portableConfigDir = makePortablePath(agent.configDir);
     const portableMcpTarget = makePortablePath(agent.mcpTargetPath);
 
