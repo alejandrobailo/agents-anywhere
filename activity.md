@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 5/9
-**Current Task:** TEST-006 — Add tests for JSON Schema validation
+**Tasks Completed:** 6/9
+**Current Task:** FEAT-012 — Implement `agentsync export` command
 
 ---
 
@@ -297,3 +297,15 @@
 - Wired up validate command in src/cli.ts
 - `npx tsc --noEmit` passes clean, all 107 tests pass
 - **Files:** src/schemas/agent-definition.schema.json, src/core/schema-loader.ts, src/commands/validate.ts, src/cli.ts
+
+### 2026-03-19 — TEST-006 (test)
+- Added 15 tests for JSON Schema validation in schema-loader.test.ts
+- Test that a valid minimal definition passes validation
+- Test that all 6 bundled agent definitions pass validation
+- Test missing required top-level fields: id, mcp, instructions
+- Test invalid enum values: writeMode 'invalid', commandType 'list', scope 'global', envVarStyle 'block', detect.type 'file-exists'
+- Test missing required MCP fields: transports, envKey
+- Test wrong types: id as number instead of string, portable as string instead of array
+- Test missing required platform paths in configDir (linux, win32)
+- `npx tsc --noEmit` passes clean, all 122 tests pass (107 existing + 15 new)
+- **Files:** src/core/__tests__/schema-loader.test.ts

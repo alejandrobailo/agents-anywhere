@@ -103,7 +103,7 @@ Expand agent coverage with Windsurf. Add `agentsync export` for shareable instal
       "Test that a definition missing 'transports' is rejected",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-012",
