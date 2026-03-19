@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 2/9
-**Current Task:** FEAT-010 — Add --dry-run flag to all mutating commands
+**Tasks Completed:** 3/9
+**Current Task:** TEST-005 — Add tests for --dry-run mode
 
 ---
 
@@ -268,3 +268,13 @@
 - Schema-loader tests already expected 6 agent definitions (done in AGENT-004)
 - `npx tsc --noEmit` passes clean, all 101 tests pass (98 existing + 3 new)
 - **Files:** src/mcp/__tests__/transformer.test.ts
+
+### 2026-03-19 — FEAT-010 (feature)
+- Added `--dry-run` flag to `link`, `unlink`, and `mcp sync` commands
+- In `src/core/linker.ts`: added `dryRun` parameter (default false) to `linkAgent()` and `unlinkAgent()`. When true, computes results without calling `symlinkSync`, `renameSync`, `unlinkSync`, or `mkdirSync`. Returns the same `LinkResult[]`/`UnlinkResult[]` arrays.
+- In `src/commands/link.ts`: accepts `dryRun` option, passes to `linkAgent()`, prefixes output with `[dry-run]` when active
+- In `src/commands/unlink.ts`: accepts `dryRun` option, passes to `unlinkAgent()`, prefixes output with `[dry-run]`
+- In `src/commands/mcp-sync.ts`: accepts `dryRun` option, skips writer calls (`writeJSON`/`mergeJSON`/`writeTOML`) when true, shows "would write" instead of "wrote"
+- In `src/cli.ts`: wired `--dry-run` option to all three commands using Commander `.option()`
+- `npx tsc --noEmit` passes clean, all 101 tests pass
+- **Files:** src/core/linker.ts, src/commands/link.ts, src/commands/unlink.ts, src/commands/mcp-sync.ts, src/cli.ts

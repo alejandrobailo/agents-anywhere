@@ -36,15 +36,17 @@ program
 program
   .command("link [agent]")
   .description("Link agent configs from central repo to agent config dirs")
-  .action(async (agent?: string) => {
-    await linkCommand(agent);
+  .option("--dry-run", "Show what would be linked without making changes")
+  .action(async (agent: string | undefined, opts: { dryRun?: boolean }) => {
+    await linkCommand(agent, { dryRun: opts.dryRun });
   });
 
 program
   .command("unlink [agent]")
   .description("Unlink agent configs and restore backups")
-  .action(async (agent?: string) => {
-    await unlinkCommand(agent);
+  .option("--dry-run", "Show what would be unlinked without making changes")
+  .action(async (agent: string | undefined, opts: { dryRun?: boolean }) => {
+    await unlinkCommand(agent, { dryRun: opts.dryRun });
   });
 
 program
@@ -77,8 +79,9 @@ mcp
   .description(
     "Generate per-agent MCP configs from the normalized mcp.json",
   )
-  .action(async () => {
-    await mcpSyncCommand();
+  .option("--dry-run", "Show what would be written without making changes")
+  .action(async (opts: { dryRun?: boolean }) => {
+    await mcpSyncCommand({ dryRun: opts.dryRun });
   });
 
 mcp

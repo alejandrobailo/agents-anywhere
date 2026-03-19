@@ -61,7 +61,7 @@ Expand agent coverage with Windsurf. Add `agentsync export` for shareable instal
       "In src/commands/mcp-sync.ts: accept dryRun option, skip writer calls (writeJSON/mergeJSON/writeTOML) when true, show what files would be written",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-005",

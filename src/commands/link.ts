@@ -8,11 +8,13 @@ import { heading, success, info, warn, error, dim } from "../utils/output.js";
 import { loadManifest } from "../utils/manifest.js";
 import type { AgentDefinition } from "../schemas/agent-schema.js";
 
-export async function linkCommand(agentId?: string): Promise<void> {
+export async function linkCommand(agentId?: string, options: { dryRun?: boolean } = {}): Promise<void> {
   const manifest = loadManifest();
   if (!manifest) return;
 
   const repoDir = manifest.repoDir;
+  const dryRun = options.dryRun ?? false;
+  const prefix = dryRun ? "[dry-run] " : "";
 
   if (agentId) {
     // Link a specific agent
@@ -27,10 +29,10 @@ export async function linkCommand(agentId?: string): Promise<void> {
       warn(`Agent "${agentId}" is not enabled in agentsync.json`);
       return;
     }
-    linkSingleAgent(agentDef, repoDir);
+    linkSingleAgent(agentDef, repoDir, dryRun, prefix);
   } else {
     // Link all enabled agents
-    heading("Linking agent configs...");
+    heading(`${prefix}Linking agent configs...`);
     const enabledIds = Object.entries(manifest.agents)
       .filter(([, v]) => v.enabled)
       .map(([id]) => id);
@@ -46,16 +48,16 @@ export async function linkCommand(agentId?: string): Promise<void> {
         warn(`Agent "${id}" in manifest but no definition found — skipping`);
         continue;
       }
-      linkSingleAgent(agentDef, repoDir);
+      linkSingleAgent(agentDef, repoDir, dryRun, prefix);
     }
   }
 }
 
-function linkSingleAgent(agentDef: AgentDefinition, repoDir: string): void {
-  const results = linkAgent(agentDef, repoDir);
+function linkSingleAgent(agentDef: AgentDefinition, repoDir: string, dryRun: boolean, prefix: string): void {
+  const results = linkAgent(agentDef, repoDir, dryRun);
 
   if (results.length === 0) {
-    info(`${agentDef.name} — no portable files found in repo`);
+    info(`${prefix}${agentDef.name} — no portable files found in repo`);
     return;
   }
 
@@ -65,14 +67,14 @@ function linkSingleAgent(agentDef: AgentDefinition, repoDir: string): void {
   const items = results.map((r) => r.item).join(", ");
 
   if (linked.length > 0) {
-    success(`${agentDef.name} — ${items} linked`);
+    success(`${prefix}${agentDef.name} — ${items} linked`);
   } else if (results.length > 0 && skipped.length === results.length) {
-    info(`${agentDef.name} — already linked ${dim("(skipped)")}`);
+    info(`${prefix}${agentDef.name} — already linked ${dim("(skipped)")}`);
   }
 
   for (const r of results) {
     if (r.action === "backed-up-and-linked") {
-      info(`  backed up existing ${r.item}`);
+      info(`${prefix}  backed up existing ${r.item}`);
     }
   }
 }

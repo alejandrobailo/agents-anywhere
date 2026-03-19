@@ -12,10 +12,12 @@ import { loadManifest } from "../utils/manifest.js";
 import { expandPath, getPlatformPath } from "../utils/paths.js";
 import { heading, success, warn, error, dim } from "../utils/output.js";
 
-export async function mcpSyncCommand(): Promise<void> {
+export async function mcpSyncCommand(options: { dryRun?: boolean } = {}): Promise<void> {
   const manifest = loadManifest();
   if (!manifest) return;
 
+  const dryRun = options.dryRun ?? false;
+  const prefix = dryRun ? "[dry-run] " : "";
   const mcpPath = path.join(manifest.repoDir, "mcp.json");
 
   let config;
@@ -32,7 +34,7 @@ export async function mcpSyncCommand(): Promise<void> {
     return;
   }
 
-  heading("Syncing MCP config to agents...");
+  heading(`${prefix}Syncing MCP config to agents...`);
 
   const enabledIds = Object.entries(manifest.agents)
     .filter(([, v]) => v.enabled)
@@ -55,17 +57,19 @@ export async function mcpSyncCommand(): Promise<void> {
     const configDir = expandPath(getPlatformPath(agentDef.configDir));
     const targetPath = path.join(configDir, agentDef.mcp.configPath);
 
-    if (result.format === "toml") {
-      writeTOML(targetPath, result.rootKey, result.servers);
-    } else if (agentDef.mcp.writeMode === "merge") {
-      mergeJSON(targetPath, result.rootKey, result.servers);
-    } else {
-      writeJSON(targetPath, result.rootKey, result.servers);
+    if (!dryRun) {
+      if (result.format === "toml") {
+        writeTOML(targetPath, result.rootKey, result.servers);
+      } else if (agentDef.mcp.writeMode === "merge") {
+        mergeJSON(targetPath, result.rootKey, result.servers);
+      } else {
+        writeJSON(targetPath, result.rootKey, result.servers);
+      }
     }
 
-    success(`${agentDef.name} — wrote ${dim(targetPath)}`);
+    success(`${prefix}${agentDef.name} — ${dryRun ? "would write" : "wrote"} ${dim(targetPath)}`);
     synced++;
   }
 
-  console.log(`\nSynced ${serverCount} server(s) to ${synced} agent(s).`);
+  console.log(`\n${prefix}Synced ${serverCount} server(s) to ${synced} agent(s).`);
 }

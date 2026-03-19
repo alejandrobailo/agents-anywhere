@@ -83,13 +83,16 @@ function backupTimestamp(): string {
 export function linkAgent(
   agentDef: AgentDefinition,
   repoDir: string,
+  dryRun = false,
 ): LinkResult[] {
   const { configDir, agentRepoDir } = resolvePaths(agentDef, repoDir);
   const items = getPortableItems(agentDef);
   const results: LinkResult[] = [];
 
   // Ensure config dir exists
-  mkdirSync(configDir, { recursive: true });
+  if (!dryRun) {
+    mkdirSync(configDir, { recursive: true });
+  }
 
   for (const item of items) {
     const agentPath = path.join(configDir, item);
@@ -108,15 +111,19 @@ export function linkAgent(
       }
 
       // Existing real file/dir or wrong symlink — backup
-      const backupPath = `${agentPath}.backup.${backupTimestamp()}`;
-      renameSync(agentPath, backupPath);
-      symlinkSync(repoPath, agentPath);
+      if (!dryRun) {
+        const backupPath = `${agentPath}.backup.${backupTimestamp()}`;
+        renameSync(agentPath, backupPath);
+        symlinkSync(repoPath, agentPath);
+      }
       results.push({ item, action: "backed-up-and-linked", agentPath });
       continue;
     }
 
     // No existing file — create symlink
-    symlinkSync(repoPath, agentPath);
+    if (!dryRun) {
+      symlinkSync(repoPath, agentPath);
+    }
     results.push({ item, action: "linked", agentPath });
   }
 
@@ -130,6 +137,7 @@ export function linkAgent(
 export function unlinkAgent(
   agentDef: AgentDefinition,
   repoDir: string,
+  dryRun = false,
 ): UnlinkResult[] {
   const { configDir, agentRepoDir } = resolvePaths(agentDef, repoDir);
   const items = getPortableItems(agentDef);
@@ -146,12 +154,16 @@ export function unlinkAgent(
     }
 
     // Remove the symlink
-    unlinkSync(agentPath);
+    if (!dryRun) {
+      unlinkSync(agentPath);
+    }
 
     // Restore most recent backup if available
     const backup = findMostRecentBackup(configDir, item);
     if (backup) {
-      renameSync(path.join(configDir, backup), agentPath);
+      if (!dryRun) {
+        renameSync(path.join(configDir, backup), agentPath);
+      }
       results.push({ item, action: "restored", agentPath });
     } else {
       results.push({ item, action: "unlinked", agentPath });
