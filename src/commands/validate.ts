@@ -1,31 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { validateAgainstSchema } from "../core/schema-loader.js";
+import { validateAgainstSchema, getAgentsDir } from "../core/schema-loader.js";
 import { success, error, heading, info } from "../utils/output.js";
-
-/**
- * Returns the path to the bundled agents/ directory.
- */
-function getAgentsDir(): string {
-  const candidates = [
-    path.resolve(__dirname, "../../agents"),
-    path.resolve(__dirname, "../agents"),
-    path.resolve(__dirname, "agents"),
-  ];
-
-  for (const candidate of candidates) {
-    try {
-      readdirSync(candidate);
-      return candidate;
-    } catch {
-      // try next
-    }
-  }
-
-  throw new Error(
-    "Could not find agents/ directory. Ensure agent definition JSON files are bundled.",
-  );
-}
 
 /**
  * `agentsync validate` — Load all agent definitions and report validation results.
