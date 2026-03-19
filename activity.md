@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 2/11
-**Current Task:** SYNC-001
+**Tasks Completed:** 3/11
+**Current Task:** AGENT-001
 
 ---
 
@@ -143,3 +143,11 @@
 - Added 7 new test cases covering: array command output (with/without args), custom urlKey ('httpUrl'), omitted type fields (implicit transport), env syntax with array commands, transport type values
 - `npx tsc --noEmit` passes clean, all 64 tests pass (57 existing + 7 new)
 - **Files:** src/mcp/transformer.ts, src/mcp/__tests__/transformer.test.ts
+
+### 2026-03-19 — SYNC-001 (feature)
+- Updated mcp-sync command to support mergeJSON write mode for agents that share config files
+- Imported mergeJSON from writer.ts alongside existing writeJSON and writeTOML
+- Updated write routing: format === 'toml' → writeTOML, writeMode === 'merge' → mergeJSON, else → writeJSON (standalone)
+- This enables Phase 2 agents like OpenCode and Gemini CLI that merge MCP config into existing JSON files
+- `npx tsc --noEmit` passes clean
+- **Files:** src/commands/mcp-sync.ts

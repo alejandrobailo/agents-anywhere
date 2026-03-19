@@ -51,7 +51,7 @@ Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their
       "Update the write routing: if format === 'toml' → writeTOML, else if writeMode === 'merge' → mergeJSON(targetPath, rootKey, servers), else → writeJSON(targetPath, rootKey, servers)",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "AGENT-001",

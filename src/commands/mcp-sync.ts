@@ -6,7 +6,7 @@
 import path from "node:path";
 import { parseMCPConfig } from "../mcp/parser.js";
 import { transformForAgent } from "../mcp/transformer.js";
-import { writeJSON, writeTOML } from "../mcp/writer.js";
+import { writeJSON, mergeJSON, writeTOML } from "../mcp/writer.js";
 import { loadAgentById } from "../core/schema-loader.js";
 import { loadManifest } from "../utils/manifest.js";
 import { expandPath, getPlatformPath } from "../utils/paths.js";
@@ -57,6 +57,8 @@ export async function mcpSyncCommand(): Promise<void> {
 
     if (result.format === "toml") {
       writeTOML(targetPath, result.servers);
+    } else if (agentDef.mcp.writeMode === "merge") {
+      mergeJSON(targetPath, result.rootKey, result.servers);
     } else {
       writeJSON(targetPath, result.rootKey, result.servers);
     }
