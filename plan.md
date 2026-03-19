@@ -166,7 +166,7 @@ Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their
       "Use tmp directories with controlled filesystem state for reliable testing",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "RELEASE-001",

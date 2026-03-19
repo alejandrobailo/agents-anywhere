@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 9/11
-**Current Task:** TEST-003
+**Tasks Completed:** 10/11
+**Current Task:** RELEASE-001
 
 ---
 
@@ -219,3 +219,10 @@
 - Wired up in src/cli.ts as `agentsync mcp diff`
 - `npx tsc --noEmit` passes clean, all 74 tests pass
 - **Files:** src/commands/mcp-diff.ts, src/cli.ts
+
+### 2026-03-19 — TEST-003 (test)
+- Added tests for doctor command: broken symlink detection (3 tests), credential detection (4 tests), stale config detection (3 tests), MCP config freshness (4 tests)
+- Added tests for mcp diff command: diffServers function with 7 tests covering null existing, identical configs, added/removed/changed servers, mixed scenarios, empty edge cases
+- All tests use tmp directories with controlled filesystem state for reliable, isolated testing
+- `npx tsc --noEmit` passes clean, all 96 tests pass (74 existing + 22 new)
+- **Files:** src/commands/__tests__/doctor.test.ts, src/commands/__tests__/mcp-diff.test.ts
