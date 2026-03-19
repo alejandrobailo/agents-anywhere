@@ -135,7 +135,7 @@ Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their
       "Wire up in src/cli.ts as 'agentsync doctor'",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-009",

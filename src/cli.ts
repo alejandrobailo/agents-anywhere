@@ -10,6 +10,7 @@ import { agentsCommand } from "./commands/agents.js";
 import { mcpSyncCommand } from "./commands/mcp-sync.js";
 import { mcpAddCommand } from "./commands/mcp-add.js";
 import { mcpListCommand } from "./commands/mcp-list.js";
+import { doctorCommand } from "./commands/doctor.js";
 
 const program = new Command();
 
@@ -56,6 +57,13 @@ program
   .description("List all known agents with install and link status")
   .action(async () => {
     await agentsCommand();
+  });
+
+program
+  .command("doctor")
+  .description("Diagnose config health: broken symlinks, credentials, stale configs")
+  .action(async () => {
+    await doctorCommand();
   });
 
 const mcp = program

@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 7/11
-**Current Task:** FEAT-008
+**Tasks Completed:** 8/11
+**Current Task:** FEAT-009
 
 ---
 
@@ -195,3 +195,15 @@
 - Updated schema-loader tests to expect exactly 5 agent definitions (claude-code, codex, opencode, gemini-cli, cursor)
 - `npx tsc --noEmit` passes clean, all 74 tests pass (64 existing + 10 new)
 - **Files:** src/mcp/__tests__/transformer.test.ts, src/core/__tests__/schema-loader.test.ts
+
+### 2026-03-19 — FEAT-008 (feature)
+- Implemented `agentsync doctor` command for diagnosing config health
+- Check 1 — Broken symlinks: detects symlinks in agent config dirs pointing to non-existent targets
+- Check 2 — Credentials in repo: scans repo root and agent subdirs for credential files (e.g. .claude.json)
+- Check 3 — Stale configs: detects symlinked items whose repo-side source files are missing
+- Check 4 — MCP config freshness: compares mcp.json mtime vs generated MCP config mtimes, warns if stale
+- Colored diagnostic output: green checkmark for healthy checks, red X for issues with fix suggestions
+- Wired up in src/cli.ts as `agentsync doctor`
+- Exported individual check functions for testability
+- `npx tsc --noEmit` passes clean, all 74 tests pass
+- **Files:** src/commands/doctor.ts, src/cli.ts
