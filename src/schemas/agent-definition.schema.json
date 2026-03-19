@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentDefinition",
+  "description": "Declarative agent definition for agentsync. Each agent is defined by a JSON file matching this schema.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "configDir",
+    "detect",
+    "portable",
+    "ignore",
+    "credentials",
+    "instructions",
+    "mcp"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier, used as directory name in the config repo"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable display name"
+    },
+    "configDir": {
+      "$ref": "#/definitions/PlatformPaths",
+      "description": "Per-platform config directory paths"
+    },
+    "detect": {
+      "$ref": "#/definitions/DetectRule",
+      "description": "How to detect if the agent is installed"
+    },
+    "portable": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Glob patterns for files to symlink"
+    },
+    "ignore": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Glob patterns for files to never sync"
+    },
+    "credentials": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Paths to credential files to warn about if found in repo"
+    },
+    "instructions": {
+      "$ref": "#/definitions/InstructionsConfig",
+      "description": "Agent instructions file configuration"
+    },
+    "mcp": {
+      "$ref": "#/definitions/MCPConfig",
+      "description": "MCP configuration for the agent"
+    }
+  },
+  "definitions": {
+    "PlatformPaths": {
+      "type": "object",
+      "required": ["darwin", "linux", "win32"],
+      "additionalProperties": false,
+      "properties": {
+        "darwin": { "type": "string" },
+        "linux": { "type": "string" },
+        "win32": { "type": "string" }
+      }
+    },
+    "DetectRule": {
+      "type": "object",
+      "required": ["type", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["directory-exists"]
+        },
+        "path": { "type": "string" }
+      }
+    },
+    "InstructionsConfig": {
+      "type": "object",
+      "required": ["filename", "globalPath"],
+      "additionalProperties": false,
+      "properties": {
+        "filename": { "type": "string" },
+        "globalPath": { "type": "string" }
+      }
+    },
+    "TransportConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "typeField": { "type": "string" },
+        "typeValue": { "type": "string" },
+        "urlKey": { "type": "string" }
+      }
+    },
+    "MCPConfig": {
+      "type": "object",
+      "required": [
+        "configPath",
+        "scope",
+        "rootKey",
+        "writeMode",
+        "envSyntax",
+        "transports",
+        "commandType",
+        "envKey"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "configPath": {
+          "type": "string",
+          "description": "Path relative to configDir"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["project-and-user", "user", "project"]
+        },
+        "rootKey": {
+          "type": "string",
+          "description": "Top-level key wrapping server entries"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["json", "toml"]
+        },
+        "writeMode": {
+          "type": "string",
+          "enum": ["standalone", "merge"]
+        },
+        "envSyntax": {
+          "type": "string",
+          "description": "Template for env var substitution — VAR is replaced with env var name"
+        },
+        "defaultSyntax": {
+          "type": "string",
+          "description": "Fallback env syntax with default value support"
+        },
+        "transports": {
+          "type": "object",
+          "properties": {
+            "stdio": { "$ref": "#/definitions/TransportConfig" },
+            "http": { "$ref": "#/definitions/TransportConfig" }
+          },
+          "additionalProperties": false
+        },
+        "commandType": {
+          "type": "string",
+          "enum": ["string", "array"]
+        },
+        "envKey": {
+          "type": "string",
+          "description": "Key name for environment variables object"
+        },
+        "serverSection": {
+          "type": "string",
+          "description": "TOML section key for reading existing servers"
+        },
+        "envVarStyle": {
+          "type": "string",
+          "enum": ["inline", "named"]
+        }
+      }
+    }
+  }
+}

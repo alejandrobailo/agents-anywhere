@@ -13,6 +13,7 @@ import { mcpAddCommand } from "./commands/mcp-add.js";
 import { mcpListCommand } from "./commands/mcp-list.js";
 import { mcpDiffCommand } from "./commands/mcp-diff.js";
 import { doctorCommand } from "./commands/doctor.js";
+import { validateCommand } from "./commands/validate.js";
 
 const program = new Command();
 
@@ -68,6 +69,13 @@ program
   .description("Diagnose config health: broken symlinks, credentials, stale configs")
   .action(async () => {
     await doctorCommand();
+  });
+
+program
+  .command("validate")
+  .description("Validate all bundled agent definition JSON files against the schema")
+  .action(async () => {
+    await validateCommand();
   });
 
 const mcp = program

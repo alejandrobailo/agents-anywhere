@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 4/9
-**Current Task:** FEAT-011 — Add JSON Schema validation for agent definition files
+**Tasks Completed:** 5/9
+**Current Task:** TEST-006 — Add tests for JSON Schema validation
 
 ---
 
@@ -286,3 +286,14 @@
 - Added e2e test: linkAgent with dryRun=true on Claude Code definition returns results but creates zero symlinks in config dir
 - `npx tsc --noEmit` passes clean, all 107 tests pass (101 existing + 6 new)
 - **Files:** src/core/__tests__/linker.test.ts, src/__tests__/e2e.test.ts
+
+### 2026-03-19 — FEAT-011 (feature)
+- Created JSON Schema (draft-07) for agent definitions at src/schemas/agent-definition.schema.json
+- Schema covers full AgentDefinition structure: required fields, nested objects (PlatformPaths, DetectRule, InstructionsConfig, MCPConfig, TransportConfig), enums (writeMode, commandType, scope, format, envVarStyle, detect.type)
+- Replaced hand-rolled validateAgentDefinition() in schema-loader.ts with schema-driven validateAgainstSchema() function
+- New validator recursively walks JSON Schema: checks types, required fields, enum values, resolves $ref pointers — zero new dependencies
+- Exported validateAgainstSchema() and ValidationResult/ValidationError types for use by validate command and tests
+- Created `agentsync validate` CLI command (src/commands/validate.ts) — loads all bundled agent definitions, runs schema validation, reports per-file results with colored output
+- Wired up validate command in src/cli.ts
+- `npx tsc --noEmit` passes clean, all 107 tests pass
+- **Files:** src/schemas/agent-definition.schema.json, src/core/schema-loader.ts, src/commands/validate.ts, src/cli.ts

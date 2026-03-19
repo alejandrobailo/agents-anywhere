@@ -2,6 +2,31 @@ import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import type { AgentDefinition } from "../schemas/agent-schema.js";
 
+/** A single validation error with a JSON path and message */
+export interface ValidationError {
+  path: string;
+  message: string;
+}
+
+/** Result of validating an agent definition */
+export interface ValidationResult {
+  valid: boolean;
+  errors: ValidationError[];
+}
+
+// JSON Schema type helpers (subset of draft-07 that we support)
+interface SchemaNode {
+  type?: string;
+  required?: string[];
+  properties?: Record<string, SchemaNode>;
+  additionalProperties?: boolean;
+  items?: SchemaNode;
+  enum?: string[];
+  $ref?: string;
+  definitions?: Record<string, SchemaNode>;
+  [key: string]: unknown;
+}
+
 /**
  * Returns the path to the bundled agents/ directory.
  * In development, this is at the project root.
@@ -33,13 +58,148 @@ function getAgentsDir(): string {
 }
 
 /**
+ * Load the agent definition JSON Schema from the bundled schemas directory.
+ */
+function loadSchema(): SchemaNode {
+  const schemaPath = path.resolve(__dirname, "../schemas/agent-definition.schema.json");
+  const raw = readFileSync(schemaPath, "utf-8");
+  return JSON.parse(raw) as SchemaNode;
+}
+
+/**
+ * Resolve a $ref pointer within the schema (supports #/definitions/Name).
+ */
+function resolveRef(ref: string, root: SchemaNode): SchemaNode {
+  const parts = ref.replace(/^#\//, "").split("/");
+  let current: unknown = root;
+  for (const part of parts) {
+    if (current && typeof current === "object" && part in current) {
+      current = (current as Record<string, unknown>)[part];
+    } else {
+      throw new Error(`Cannot resolve $ref: ${ref}`);
+    }
+  }
+  return current as SchemaNode;
+}
+
+/**
+ * Validate a value against a JSON Schema node.
+ * Returns an array of validation errors (empty = valid).
+ *
+ * Supports: type checking (string, object, array), required fields,
+ * enum values, nested properties, $ref resolution, and array items.
+ */
+function validateNode(
+  value: unknown,
+  schema: SchemaNode,
+  root: SchemaNode,
+  currentPath: string,
+): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  // Resolve $ref
+  let resolved = schema;
+  if (schema.$ref) {
+    resolved = { ...resolveRef(schema.$ref as string, root) };
+    // Merge any sibling properties (e.g. description) — $ref takes precedence for validation
+  }
+
+  // Type check
+  if (resolved.type) {
+    const actualType = getJsonType(value);
+    if (actualType !== resolved.type) {
+      errors.push({
+        path: currentPath,
+        message: `Expected type "${resolved.type}", got "${actualType}"`,
+      });
+      return errors; // No point checking further if type is wrong
+    }
+  }
+
+  // Enum check
+  if (resolved.enum && typeof value === "string") {
+    if (!resolved.enum.includes(value)) {
+      errors.push({
+        path: currentPath,
+        message: `Invalid value "${value}". Must be one of: ${resolved.enum.join(", ")}`,
+      });
+    }
+  }
+
+  // Object validation
+  if (resolved.type === "object" && typeof value === "object" && value !== null) {
+    const obj = value as Record<string, unknown>;
+
+    // Required fields
+    if (resolved.required) {
+      for (const field of resolved.required) {
+        if (obj[field] === undefined || obj[field] === null) {
+          errors.push({
+            path: currentPath ? `${currentPath}.${field}` : field,
+            message: `Missing required field "${field}"`,
+          });
+        }
+      }
+    }
+
+    // Validate properties
+    if (resolved.properties) {
+      for (const [key, propSchema] of Object.entries(resolved.properties)) {
+        if (obj[key] !== undefined && obj[key] !== null) {
+          const propPath = currentPath ? `${currentPath}.${key}` : key;
+          errors.push(...validateNode(obj[key], propSchema, root, propPath));
+        }
+      }
+    }
+  }
+
+  // Array validation
+  if (resolved.type === "array" && Array.isArray(value)) {
+    if (resolved.items) {
+      for (let i = 0; i < value.length; i++) {
+        errors.push(
+          ...validateNode(value[i], resolved.items, root, `${currentPath}[${i}]`),
+        );
+      }
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Get the JSON type name for a value.
+ */
+function getJsonType(value: unknown): string {
+  if (value === null) return "null";
+  if (Array.isArray(value)) return "array";
+  return typeof value;
+}
+
+/**
+ * Validate an agent definition against the JSON Schema.
+ * Returns a ValidationResult with a list of errors (empty = valid).
+ */
+export function validateAgainstSchema(data: unknown): ValidationResult {
+  const schema = loadSchema();
+  const errors = validateNode(data, schema, schema, "");
+  return { valid: errors.length === 0, errors };
+}
+
+/**
  * Load a single agent definition from a JSON file.
  */
 export function loadAgentDefinition(filePath: string): AgentDefinition {
   const raw = readFileSync(filePath, "utf-8");
-  const parsed = JSON.parse(raw) as AgentDefinition;
-  validateAgentDefinition(parsed, filePath);
-  return parsed;
+  const parsed = JSON.parse(raw);
+  const result = validateAgainstSchema(parsed);
+  if (!result.valid) {
+    const messages = result.errors.map((e) => `  ${e.path}: ${e.message}`).join("\n");
+    throw new Error(
+      `Agent definition ${filePath} failed validation:\n${messages}`,
+    );
+  }
+  return parsed as AgentDefinition;
 }
 
 /**
@@ -62,44 +222,4 @@ export function loadAllAgentDefinitions(): AgentDefinition[] {
 export function loadAgentById(id: string): AgentDefinition | undefined {
   const all = loadAllAgentDefinitions();
   return all.find((agent) => agent.id === id);
-}
-
-/**
- * Validate that an agent definition has all required fields.
- */
-function validateAgentDefinition(
-  def: AgentDefinition,
-  source: string,
-): void {
-  const required: (keyof AgentDefinition)[] = [
-    "id",
-    "name",
-    "configDir",
-    "detect",
-    "portable",
-    "ignore",
-    "credentials",
-    "instructions",
-    "mcp",
-  ];
-
-  for (const field of required) {
-    if (def[field] === undefined || def[field] === null) {
-      throw new Error(
-        `Agent definition ${source} is missing required field: ${field}`,
-      );
-    }
-  }
-
-  if (!def.configDir.darwin || !def.configDir.linux || !def.configDir.win32) {
-    throw new Error(
-      `Agent definition ${source} is missing platform paths in configDir`,
-    );
-  }
-
-  if (!def.mcp.configPath || !def.mcp.rootKey || !def.mcp.envSyntax || !def.mcp.writeMode || !def.mcp.commandType) {
-    throw new Error(
-      `Agent definition ${source} is missing required MCP fields`,
-    );
-  }
 }

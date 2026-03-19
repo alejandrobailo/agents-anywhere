@@ -89,7 +89,7 @@ Expand agent coverage with Windsurf. Add `agentsync export` for shareable instal
       "Create src/commands/validate.ts implementing the validateCommand()",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-006",
