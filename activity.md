@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 1/9
-**Current Task:** TEST-004 — Add snapshot tests for Windsurf MCP transformation
+**Tasks Completed:** 2/9
+**Current Task:** FEAT-010 — Add --dry-run flag to all mutating commands
 
 ---
 
@@ -258,3 +258,13 @@
 - Updated schema-loader tests to expect 6 agent definitions (up from 5)
 - `npx tsc --noEmit` passes clean, all 98 tests pass
 - **Files:** agents/windsurf.json, src/core/__tests__/schema-loader.test.ts
+
+### 2026-03-19 — TEST-004 (test)
+- Added snapshot tests for Windsurf MCP transformation in transformer.test.ts
+- Test stdio server: verifies ${env:VAR} syntax, standard transport types (type: "stdio"), mcpServers root key
+- Test http server: verifies serverUrl key for HTTP URL (not 'url'), standard transport type (type: "http"), Bearer header with ${env:VAR} syntax
+- Added snapshot test for full Windsurf output
+- Added Windsurf to mergeJSON routing test as standalone writeMode agent
+- Schema-loader tests already expected 6 agent definitions (done in AGENT-004)
+- `npx tsc --noEmit` passes clean, all 101 tests pass (98 existing + 3 new)
+- **Files:** src/mcp/__tests__/transformer.test.ts

@@ -46,7 +46,7 @@ Expand agent coverage with Windsurf. Add `agentsync export` for shareable instal
       "Update schema-loader tests to expect 6 agent definitions (up from 5)",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-010",

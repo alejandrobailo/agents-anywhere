@@ -408,6 +408,45 @@ describe("Cursor", () => {
   });
 });
 
+describe("Windsurf", () => {
+  it("transforms stdio server with ${env:VAR} syntax", async () => {
+    const agent = await loadAgentById("windsurf");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.rootKey).toBe("mcpServers");
+    expect(result.format).toBe("json");
+    expect(result.servers.github).toEqual({
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-github"],
+      env: {
+        GITHUB_TOKEN: "${env:GITHUB_TOKEN}",
+      },
+    });
+  });
+
+  it("transforms http server with serverUrl key", async () => {
+    const agent = await loadAgentById("windsurf");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    // Windsurf uses serverUrl instead of url for HTTP servers
+    expect(result.servers.sentry).not.toHaveProperty("url");
+    expect(result.servers.sentry).toEqual({
+      type: "http",
+      serverUrl: "https://mcp.sentry.dev/sse",
+      headers: {
+        Authorization: "Bearer ${env:SENTRY_TOKEN}",
+      },
+    });
+  });
+
+  it("snapshot: full Windsurf output", async () => {
+    const agent = await loadAgentById("windsurf");
+    const result = transformForAgent(sampleConfig, agent!);
+    expect(result).toMatchSnapshot();
+  });
+});
+
 describe("mergeJSON routing", () => {
   it("agents with writeMode merge use mergeJSON in mcp-sync", async () => {
     const opencode = await loadAgentById("opencode");
@@ -422,6 +461,9 @@ describe("mergeJSON routing", () => {
     // standalone writeMode agents
     expect(cursor!.mcp.writeMode).toBe("standalone");
     expect(claudeCode!.mcp.writeMode).toBe("standalone");
+
+    const windsurf = await loadAgentById("windsurf");
+    expect(windsurf!.mcp.writeMode).toBe("standalone");
   });
 });
 

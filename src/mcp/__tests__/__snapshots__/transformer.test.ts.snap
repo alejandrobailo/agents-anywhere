@@ -79,6 +79,33 @@ exports[`OpenCode > snapshot: full OpenCode output 1`] = `
 }
 `;
 
+exports[`Windsurf > snapshot: full Windsurf output 1`] = `
+{
+  "format": "json",
+  "rootKey": "mcpServers",
+  "servers": {
+    "github": {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github",
+      ],
+      "command": "npx",
+      "env": {
+        "GITHUB_TOKEN": "\${env:GITHUB_TOKEN}",
+      },
+      "type": "stdio",
+    },
+    "sentry": {
+      "headers": {
+        "Authorization": "Bearer \${env:SENTRY_TOKEN}",
+      },
+      "serverUrl": "https://mcp.sentry.dev/sse",
+      "type": "http",
+    },
+  },
+}
+`;
+
 exports[`transformForAgent > Claude Code > snapshot: full Claude Code output 1`] = `
 {
   "format": "json",
