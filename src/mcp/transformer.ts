@@ -142,6 +142,9 @@ function transformServerNamed(
 
 /** Resolve an EnvRef to the agent's env var syntax */
 function resolveEnvRef(ref: EnvRef, syntax: string): string {
+  if (!syntax.includes("VAR")) {
+    throw new Error(`envSyntax "${syntax}" does not contain placeholder "VAR"`);
+  }
   // Replace VAR placeholder with the actual var name
   const resolved = syntax.replace("VAR", ref.$env);
 

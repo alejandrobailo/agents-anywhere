@@ -35,11 +35,15 @@ export function loadManifest(): Manifest | null {
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) {
       const raw = fs.readFileSync(candidate, "utf-8");
-      const parsed = JSON.parse(raw) as Manifest;
-      // Ensure repoDir is set (derive from manifest location if missing)
-      if (!parsed.repoDir) {
-        parsed.repoDir = path.dirname(candidate);
+      let parsed: Manifest;
+      try {
+        parsed = JSON.parse(raw) as Manifest;
+      } catch {
+        error(`Invalid JSON in ${candidate}`);
+        return null;
       }
+      // Always derive repoDir from manifest location to prevent path traversal
+      parsed.repoDir = path.dirname(candidate);
       return parsed;
     }
   }

@@ -56,7 +56,7 @@ export async function mcpSyncCommand(): Promise<void> {
     const targetPath = path.join(configDir, agentDef.mcp.configPath);
 
     if (result.format === "toml") {
-      writeTOML(targetPath, result.servers);
+      writeTOML(targetPath, result.rootKey, result.servers);
     } else if (agentDef.mcp.writeMode === "merge") {
       mergeJSON(targetPath, result.rootKey, result.servers);
     } else {

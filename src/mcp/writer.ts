@@ -48,7 +48,11 @@ export function mergeJSON(
   let existing: Record<string, unknown> = {};
   if (fs.existsSync(filePath)) {
     const raw = fs.readFileSync(filePath, "utf-8");
-    existing = JSON.parse(raw);
+    try {
+      existing = JSON.parse(raw);
+    } catch {
+      throw new Error(`Invalid JSON in ${filePath} — fix or delete the file before syncing`);
+    }
   }
 
   existing[key] = servers;
@@ -67,6 +71,7 @@ export function mergeJSON(
  */
 export function writeTOML(
   filePath: string,
+  rootKey: string,
   servers: Record<string, Record<string, unknown>>,
 ): void {
   ensureDir(filePath);
@@ -77,6 +82,6 @@ export function writeTOML(
     existing = TOML.parse(raw) as Record<string, unknown>;
   }
 
-  existing.mcp_servers = servers;
+  existing[rootKey] = servers;
   fs.writeFileSync(filePath, TOML.stringify(existing) + "\n", "utf-8");
 }

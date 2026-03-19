@@ -2,6 +2,7 @@
 
 import { Command } from "commander";
 
+import { version } from "./version.js";
 import { initCommand } from "./commands/init.js";
 import { linkCommand } from "./commands/link.js";
 import { unlinkCommand } from "./commands/unlink.js";
@@ -20,7 +21,7 @@ program
   .description(
     "Manage your AI coding agent configs in one place. One MCP config for every tool.",
   )
-  .version("0.1.0");
+  .version(version);
 
 program
   .command("init")
@@ -101,4 +102,7 @@ mcp
     await mcpListCommand();
   });
 
-program.parse();
+program.parseAsync().catch((err: Error) => {
+  console.error(err.message);
+  process.exit(1);
+});

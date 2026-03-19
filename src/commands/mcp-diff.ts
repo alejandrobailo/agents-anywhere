@@ -40,7 +40,7 @@ function readExistingServers(
 
   if (format === "toml") {
     const parsed = TOML.parse(raw) as Record<string, unknown>;
-    const section = parsed.mcp_servers;
+    const section = parsed[agentDef.mcp.serverSection ?? agentDef.mcp.rootKey];
     if (!section || typeof section !== "object") return {};
     return section as Record<string, Record<string, unknown>>;
   }
