@@ -14,7 +14,8 @@ import { linkAgent, unlinkAgent, getStatus } from "../core/linker.js";
 import { loadAgentById } from "../core/schema-loader.js";
 import { parseMCPConfig } from "../mcp/parser.js";
 import { transformForAgent } from "../mcp/transformer.js";
-import { writeJSON, writeTOML } from "../mcp/writer.js";
+import { writeJSON, writeTOML, mergeJSON } from "../mcp/writer.js";
+import { mcpSyncCommand } from "../commands/mcp-sync.js";
 import * as TOML from "smol-toml";
 
 let tmpDir: string;
@@ -60,6 +61,7 @@ beforeEach(() => {
 
   // Suppress console output during tests
   vi.spyOn(console, "log").mockImplementation(() => {});
+  vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
 afterEach(() => {
@@ -217,7 +219,7 @@ describe("e2e: init → link → mcp sync → unlink", () => {
 
     // Write to Codex's config location
     const tomlOutputPath = path.join(fakeHome, ".codex", "config.toml");
-    writeTOML(tomlOutputPath, result.servers);
+    writeTOML(tomlOutputPath, result.rootKey, result.servers);
 
     // Verify output
     expect(fs.existsSync(tomlOutputPath)).toBe(true);
@@ -336,7 +338,7 @@ describe("e2e: init → link → mcp sync → unlink", () => {
     // Codex MCP sync
     const codexTransform = transformForAgent(config, codexDef);
     const codexTomlPath = path.join(fakeHome, ".codex", "config.toml");
-    writeTOML(codexTomlPath, codexTransform.servers);
+    writeTOML(codexTomlPath, codexTransform.rootKey, codexTransform.servers);
 
     // Verify Claude Code .mcp.json
     const claudeMcp = JSON.parse(fs.readFileSync(claudeMcpPath, "utf-8"));
@@ -374,5 +376,80 @@ describe("e2e: init → link → mcp sync → unlink", () => {
       (s) => s.status === "linked",
     );
     expect(linkedCodexAfter).toHaveLength(0);
+  });
+
+  it("mcpSyncCommand writes correct files via the command dispatcher", async () => {
+    await initCommand(repoDir);
+
+    // Write normalized MCP config
+    fs.writeFileSync(
+      path.join(repoDir, "mcp.json"),
+      JSON.stringify(testMCPConfig, null, 2),
+    );
+
+    // Mock cwd so loadManifest finds agentsync.json
+    vi.spyOn(process, "cwd").mockReturnValue(repoDir);
+
+    await mcpSyncCommand();
+
+    // Verify Claude Code output was written via the command
+    const claudeMcpPath = path.join(fakeHome, ".claude", ".mcp.json");
+    expect(fs.existsSync(claudeMcpPath)).toBe(true);
+    const claudeMcp = JSON.parse(fs.readFileSync(claudeMcpPath, "utf-8"));
+    expect(claudeMcp.mcpServers.github.env.GITHUB_TOKEN).toBe(
+      "${GITHUB_TOKEN}",
+    );
+
+    // Verify Codex TOML output was written via the command
+    const codexTomlPath = path.join(fakeHome, ".codex", "config.toml");
+    expect(fs.existsSync(codexTomlPath)).toBe(true);
+    const codexToml = TOML.parse(
+      fs.readFileSync(codexTomlPath, "utf-8"),
+    ) as Record<string, unknown>;
+    const codexServers = codexToml.mcp_servers as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(codexServers.github.env_vars).toEqual(["GITHUB_TOKEN"]);
+  });
+
+  it("mcpSyncCommand uses mergeJSON for merge-mode agents, preserving existing keys", async () => {
+    await initCommand(repoDir);
+
+    // Write normalized MCP config
+    fs.writeFileSync(
+      path.join(repoDir, "mcp.json"),
+      JSON.stringify(testMCPConfig, null, 2),
+    );
+
+    // Enable opencode in manifest (it uses writeMode: "merge")
+    const manifestPath = path.join(repoDir, "agentsync.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+    manifest.agents["opencode"] = { enabled: true, name: "OpenCode" };
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
+    // Create pre-existing OpenCode config with non-MCP keys
+    const opencodeConfigDir = path.join(fakeHome, ".config", "opencode");
+    fs.mkdirSync(opencodeConfigDir, { recursive: true });
+    const opencodeConfigPath = path.join(opencodeConfigDir, "opencode.json");
+    fs.writeFileSync(
+      opencodeConfigPath,
+      JSON.stringify({ theme: "dark", fontSize: 14 }, null, 2),
+    );
+
+    // Mock cwd so loadManifest finds agentsync.json
+    vi.spyOn(process, "cwd").mockReturnValue(repoDir);
+
+    await mcpSyncCommand();
+
+    // Verify OpenCode config preserved non-MCP keys (merge behavior)
+    const opencodeOutput = JSON.parse(
+      fs.readFileSync(opencodeConfigPath, "utf-8"),
+    );
+    expect(opencodeOutput.theme).toBe("dark");
+    expect(opencodeOutput.fontSize).toBe(14);
+    // And MCP servers were added
+    expect(opencodeOutput.mcp).toBeDefined();
+    expect(opencodeOutput.mcp.github).toBeDefined();
   });
 });

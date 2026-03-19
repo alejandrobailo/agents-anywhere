@@ -1,12 +1,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import os from "node:os";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mergeJSON, writeJSON, writeTOML } from "../writer.js";
 
 let tmpDir: string;
 
 beforeEach(() => {
-  tmpDir = fs.mkdtempSync(path.join(import.meta.dirname ?? __dirname, ".tmp-writer-"));
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "writer-test-"));
 });
 
 afterEach(() => {
@@ -125,7 +126,7 @@ describe("writeTOML", () => {
       },
     };
 
-    writeTOML(filePath, servers);
+    writeTOML(filePath, "mcp_servers", servers);
 
     const raw = fs.readFileSync(filePath, "utf-8");
     expect(raw).toContain("[mcp_servers.github]");
@@ -153,7 +154,7 @@ describe("writeTOML", () => {
       },
     };
 
-    writeTOML(filePath, servers);
+    writeTOML(filePath, "mcp_servers", servers);
 
     const raw = fs.readFileSync(filePath, "utf-8");
     // Existing keys preserved
@@ -183,7 +184,7 @@ describe("writeTOML", () => {
       github: { type: "stdio", command: "npx", env_vars: ["GITHUB_TOKEN"] },
     };
 
-    writeTOML(filePath, newServers);
+    writeTOML(filePath, "mcp_servers", newServers);
 
     const raw = fs.readFileSync(filePath, "utf-8");
     expect(raw).toContain('model = "o4-mini"');
@@ -194,7 +195,7 @@ describe("writeTOML", () => {
 
   it("creates parent directories if needed", () => {
     const filePath = path.join(tmpDir, "nested", "config.toml");
-    writeTOML(filePath, {});
+    writeTOML(filePath, "mcp_servers", {});
     expect(fs.existsSync(filePath)).toBe(true);
   });
 });

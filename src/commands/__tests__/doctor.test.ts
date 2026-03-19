@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import os from "node:os";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { AgentDefinition } from "../../schemas/agent-schema.js";
 import {
@@ -43,7 +44,7 @@ function makeAgent(overrides: Partial<AgentDefinition> = {}): AgentDefinition {
 }
 
 beforeEach(() => {
-  tmpDir = fs.mkdtempSync(path.join(import.meta.dirname ?? __dirname, ".tmp-doctor-"));
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-test-"));
 });
 
 afterEach(() => {
