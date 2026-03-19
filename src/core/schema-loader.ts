@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import type { AgentDefinition } from "../schemas/agent-schema.js";
+import { agentDefinitionSchema } from "../schemas/agent-definition-schema-data.js";
 
 /** A single validation error with a JSON path and message */
 export interface ValidationError {
@@ -32,7 +33,7 @@ interface SchemaNode {
  * In development, this is at the project root.
  * When published, agents/ is copied to dist/agents/.
  */
-function getAgentsDir(): string {
+export function getAgentsDir(): string {
   // Walk up from this file to find the agents/ directory.
   // In dev: src/core/schema-loader.ts -> ../../agents
   // In dist: dist/core/schema-loader.js -> ../../agents (if copied to root)
@@ -55,15 +56,6 @@ function getAgentsDir(): string {
   throw new Error(
     "Could not find agents/ directory. Ensure agent definition JSON files are bundled.",
   );
-}
-
-/**
- * Load the agent definition JSON Schema from the bundled schemas directory.
- */
-function loadSchema(): SchemaNode {
-  const schemaPath = path.resolve(__dirname, "../schemas/agent-definition.schema.json");
-  const raw = readFileSync(schemaPath, "utf-8");
-  return JSON.parse(raw) as SchemaNode;
 }
 
 /**
@@ -151,6 +143,19 @@ function validateNode(
         }
       }
     }
+
+    // additionalProperties enforcement
+    if (resolved.additionalProperties === false && resolved.properties) {
+      const allowedKeys = new Set(Object.keys(resolved.properties));
+      for (const key of Object.keys(obj)) {
+        if (!allowedKeys.has(key)) {
+          errors.push({
+            path: currentPath ? `${currentPath}.${key}` : key,
+            message: `Unknown property "${key}" is not allowed`,
+          });
+        }
+      }
+    }
   }
 
   // Array validation
@@ -181,7 +186,7 @@ function getJsonType(value: unknown): string {
  * Returns a ValidationResult with a list of errors (empty = valid).
  */
 export function validateAgainstSchema(data: unknown): ValidationResult {
-  const schema = loadSchema();
+  const schema = agentDefinitionSchema as unknown as SchemaNode;
   const errors = validateNode(data, schema, schema, "");
   return { valid: errors.length === 0, errors };
 }
