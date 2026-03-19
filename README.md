@@ -21,9 +21,12 @@ npx agentsync mcp sync
 ```bash
 $ agentsync init
 
-Detected 2 AI coding agents:
+Detected 5 AI coding agents:
   Claude Code    ~/.claude
   Codex CLI      ~/.codex
+  OpenCode       ~/.config/opencode
+  Gemini CLI     ~/.gemini
+  Cursor         ~/.cursor
 
 Created config repo at ~/agentsync-config
 Run `agentsync link` to connect your agents.
@@ -32,6 +35,9 @@ $ agentsync link
 
 [OK] Claude Code — settings.json, CLAUDE.md, commands/, skills/ linked
 [OK] Codex CLI   — config.toml, AGENTS.md, skills/ linked
+[OK] OpenCode    — opencode.json, AGENTS.md linked
+[OK] Gemini CLI  — settings.json, GEMINI.md linked
+[OK] Cursor      — rules/ linked
 ```
 
 - Scans for installed agents by checking known config directories
@@ -73,12 +79,18 @@ One canonical config generates tool-specific configs automatically.
 |---|---|---|---|
 | Claude Code | `~/.claude/.mcp.json` | `mcpServers` | `${VAR}` |
 | Codex CLI | `~/.codex/config.toml` (merged) | `[mcp_servers.*]` | `env_vars` array |
+| OpenCode | `~/.config/opencode/opencode.json` (merged) | `mcp` | `{env:VAR}` |
+| Gemini CLI | `~/.gemini/settings.json` (merged) | `mcpServers` | `${VAR}` |
+| Cursor | `~/.cursor/mcp.json` | `mcpServers` | `${env:VAR}` |
 
 ```bash
 $ agentsync mcp sync
 
 [OK] Claude Code — 2 servers written to ~/.claude/.mcp.json
 [OK] Codex CLI   — 2 servers merged into ~/.codex/config.toml
+[OK] OpenCode    — 2 servers merged into ~/.config/opencode/opencode.json
+[OK] Gemini CLI  — 2 servers merged into ~/.gemini/settings.json
+[OK] Cursor      — 2 servers written to ~/.cursor/mcp.json
 ```
 
 ### Device Sync
@@ -108,19 +120,22 @@ The `init` command sets up a git `post-merge` hook so `git pull` automatically r
 | `agentsync mcp sync` | Generate per-agent MCP configs from `mcp.json` |
 | `agentsync mcp add <name>` | Interactively add an MCP server to `mcp.json` |
 | `agentsync mcp list` | Show all configured MCP servers |
+| `agentsync mcp diff` | Preview what `mcp sync` would change |
+| `agentsync doctor` | Diagnose config health: broken symlinks, credentials in repo, stale configs |
 
 ## Supported Agents
-
-### v0.1 (MVP)
 
 | Agent | Config dir | Config format | MCP config | Instructions file |
 |---|---|---|---|---|
 | Claude Code | `~/.claude` | JSON | `.mcp.json` | `CLAUDE.md` |
 | Codex CLI | `~/.codex` | TOML | `config.toml` | `AGENTS.md` |
+| OpenCode | `~/.config/opencode` | JSON | `opencode.json` (merged) | `AGENTS.md` |
+| Gemini CLI | `~/.gemini` | JSON | `settings.json` (merged) | `GEMINI.md` |
+| Cursor | `~/.cursor` | JSON | `mcp.json` | `rules/**` |
 
 ### Planned
 
-OpenCode, Gemini CLI, Cursor, Windsurf, Amp, Cline, Roo Code, and more.
+Windsurf, Amp, Cline, Roo Code, and more.
 
 ## How It Works
 
@@ -131,6 +146,9 @@ mcp.json (normalized)
     |
     +-- claude-code adapter --> ~/.claude/.mcp.json
     +-- codex adapter       --> merges into ~/.codex/config.toml
+    +-- opencode adapter    --> merges into ~/.config/opencode/opencode.json
+    +-- gemini adapter      --> merges into ~/.gemini/settings.json
+    +-- cursor adapter      --> ~/.cursor/mcp.json
 ```
 
 ### Repo structure (what you manage)

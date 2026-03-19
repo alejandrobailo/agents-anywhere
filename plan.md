@@ -181,7 +181,7 @@ Extend agentsync to support OpenCode, Gemini CLI, and Cursor — including their
       "Run npx vitest run — all tests must pass",
       "Run npm pack --dry-run — verify agents/opencode.json, agents/gemini-cli.json, agents/cursor.json included"
     ],
-    "passes": false
+    "passes": true
   }
 ]
 ```

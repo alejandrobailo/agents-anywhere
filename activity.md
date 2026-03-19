@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 10/11
-**Current Task:** RELEASE-001
+**Tasks Completed:** 11/11
+**Current Task:** ALL COMPLETE
 
 ---
 
@@ -226,3 +226,12 @@
 - All tests use tmp directories with controlled filesystem state for reliable, isolated testing
 - `npx tsc --noEmit` passes clean, all 96 tests pass (74 existing + 22 new)
 - **Files:** src/commands/__tests__/doctor.test.ts, src/commands/__tests__/mcp-diff.test.ts
+
+### 2026-03-19 — RELEASE-001 (release)
+- Updated README.md supported agents table: added OpenCode, Gemini CLI, Cursor with config details
+- Updated MCP normalization table and pipeline diagram with all 5 agents
+- Added `doctor` and `mcp diff` to the commands table in README.md
+- Bumped version in package.json and src/version.ts to 0.2.0
+- `npx tsc --noEmit` passes clean, all 96 tests pass
+- `npm pack --dry-run` confirms agents/opencode.json, agents/gemini-cli.json, agents/cursor.json included
+- **Files:** README.md, package.json, src/version.ts, plan.md, activity.md
