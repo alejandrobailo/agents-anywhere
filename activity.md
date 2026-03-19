@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 4/11
-**Current Task:** AGENT-002
+**Tasks Completed:** 5/11
+**Current Task:** AGENT-003
 
 ---
 
@@ -162,3 +162,14 @@
 - Verified definition loads correctly via schema-loader tests
 - `npx tsc --noEmit` passes clean, all 64 tests pass
 - **Files:** agents/opencode.json
+
+### 2026-03-19 — AGENT-002 (feature)
+- Created Gemini CLI agent definition (agents/gemini-cli.json)
+- Configured implicit transport (empty stdio transport config — Gemini infers from command presence)
+- HTTP transport uses httpUrl as URL key instead of standard 'url'
+- configDir: ~/.gemini (darwin/linux), %APPDATA%/gemini (win32)
+- MCP: merge writeMode, 'mcpServers' rootKey, JSON format, ${VAR} env syntax, string commandType
+- Portable files: settings.json, GEMINI.md
+- Verified definition loads correctly via schema-loader tests
+- `npx tsc --noEmit` passes clean, all 64 tests pass
+- **Files:** agents/gemini-cli.json

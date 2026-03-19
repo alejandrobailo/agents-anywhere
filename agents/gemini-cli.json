@@ -1,0 +1,42 @@
+{
+  "id": "gemini-cli",
+  "name": "Gemini CLI",
+  "configDir": {
+    "darwin": "~/.gemini",
+    "linux": "~/.gemini",
+    "win32": "%APPDATA%/gemini"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.gemini"
+  },
+  "portable": [
+    "settings.json",
+    "GEMINI.md"
+  ],
+  "ignore": [
+    "sessions/**",
+    "cache/**",
+    "*.backup.*"
+  ],
+  "credentials": [],
+  "instructions": {
+    "filename": "GEMINI.md",
+    "globalPath": "~/.gemini/GEMINI.md"
+  },
+  "mcp": {
+    "configPath": "settings.json",
+    "scope": "user",
+    "rootKey": "mcpServers",
+    "format": "json",
+    "writeMode": "merge",
+    "envSyntax": "${VAR}",
+    "transports": {
+      "stdio": {},
+      "http": { "urlKey": "httpUrl" }
+    },
+    "commandType": "string",
+    "envKey": "env",
+    "envVarStyle": "inline"
+  }
+}
