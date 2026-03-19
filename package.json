@@ -1,6 +1,6 @@
 {
   "name": "agentsync",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Manage your AI coding agent configs in one place. One MCP config for every tool. Sync between devices with git.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

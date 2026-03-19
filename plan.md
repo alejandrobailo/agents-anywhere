@@ -151,7 +151,7 @@ Expand agent coverage with Windsurf. Add `agentsync export` for shareable instal
       "Run npx vitest run — all tests must pass",
       "Run npm pack --dry-run — verify agents/windsurf.json is included"
     ],
-    "passes": false
+    "passes": true
   }
 ]
 ```

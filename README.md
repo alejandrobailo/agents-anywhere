@@ -21,12 +21,13 @@ npx agentsync mcp sync
 ```bash
 $ agentsync init
 
-Detected 5 AI coding agents:
+Detected 6 AI coding agents:
   Claude Code    ~/.claude
   Codex CLI      ~/.codex
   OpenCode       ~/.config/opencode
   Gemini CLI     ~/.gemini
   Cursor         ~/.cursor
+  Windsurf       ~/.codeium/windsurf
 
 Created config repo at ~/agentsync-config
 Run `agentsync link` to connect your agents.
@@ -38,6 +39,7 @@ $ agentsync link
 [OK] OpenCode    — opencode.json, AGENTS.md linked
 [OK] Gemini CLI  — settings.json, GEMINI.md linked
 [OK] Cursor      — rules/ linked
+[OK] Windsurf    — mcp_config.json, memories/, rules/ linked
 ```
 
 - Scans for installed agents by checking known config directories
@@ -82,6 +84,7 @@ One canonical config generates tool-specific configs automatically.
 | OpenCode | `~/.config/opencode/opencode.json` (merged) | `mcp` | `{env:VAR}` |
 | Gemini CLI | `~/.gemini/settings.json` (merged) | `mcpServers` | `${VAR}` |
 | Cursor | `~/.cursor/mcp.json` | `mcpServers` | `${env:VAR}` |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | `${env:VAR}` |
 
 ```bash
 $ agentsync mcp sync
@@ -91,6 +94,7 @@ $ agentsync mcp sync
 [OK] OpenCode    — 2 servers merged into ~/.config/opencode/opencode.json
 [OK] Gemini CLI  — 2 servers merged into ~/.gemini/settings.json
 [OK] Cursor      — 2 servers written to ~/.cursor/mcp.json
+[OK] Windsurf    — 2 servers written to ~/.codeium/windsurf/mcp_config.json
 ```
 
 ### Device Sync
@@ -121,7 +125,11 @@ The `init` command sets up a git `post-merge` hook so `git pull` automatically r
 | `agentsync mcp add <name>` | Interactively add an MCP server to `mcp.json` |
 | `agentsync mcp list` | Show all configured MCP servers |
 | `agentsync mcp diff` | Preview what `mcp sync` would change |
+| `agentsync validate` | Validate all bundled agent definition JSON files against the schema |
+| `agentsync export` | Generate a standalone install script (pure bash, no agentsync needed) |
 | `agentsync doctor` | Diagnose config health: broken symlinks, credentials in repo, stale configs |
+
+The `link`, `unlink`, and `mcp sync` commands support a `--dry-run` flag to preview changes without writing to disk.
 
 ## Supported Agents
 
@@ -132,10 +140,11 @@ The `init` command sets up a git `post-merge` hook so `git pull` automatically r
 | OpenCode | `~/.config/opencode` | JSON | `opencode.json` (merged) | `AGENTS.md` |
 | Gemini CLI | `~/.gemini` | JSON | `settings.json` (merged) | `GEMINI.md` |
 | Cursor | `~/.cursor` | JSON | `mcp.json` | `rules/**` |
+| Windsurf | `~/.codeium/windsurf` | JSON | `mcp_config.json` | `rules/**` |
 
 ### Planned
 
-Windsurf, Amp, Cline, Roo Code, and more.
+Amp, Cline, Roo Code, and more.
 
 ## How It Works
 
@@ -149,6 +158,7 @@ mcp.json (normalized)
     +-- opencode adapter    --> merges into ~/.config/opencode/opencode.json
     +-- gemini adapter      --> merges into ~/.gemini/settings.json
     +-- cursor adapter      --> ~/.cursor/mcp.json
+    +-- windsurf adapter    --> ~/.codeium/windsurf/mcp_config.json
 ```
 
 ### Repo structure (what you manage)

@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-19
-**Tasks Completed:** 8/9
-**Current Task:** RELEASE-002 — Update README, bump version to 0.3.0, verify package
+**Tasks Completed:** 9/9
+**Current Task:** All Phase 3 tasks complete
 
 ---
 
@@ -334,3 +334,14 @@
 - Test well-formed bash: matched heredoc open/close, matched if/fi, trailing newline
 - `npx tsc --noEmit` passes clean, all 131 tests pass (122 existing + 9 new)
 - **Files:** src/commands/__tests__/export.test.ts
+
+### 2026-03-19 — RELEASE-002 (release)
+- Updated README.md supported agents table: added Windsurf with config details
+- Updated MCP normalization table, pipeline diagram, and example output with all 6 agents
+- Added `validate` and `export` to the commands table in README.md
+- Documented `--dry-run` flag in the commands section
+- Bumped version in package.json and src/version.ts to 0.3.0
+- Updated DEVELOPMENT.md: added windsurf.json to agents list, validate.ts and export.ts to commands, agent-definition.schema.json to schemas, export.test.ts to test table, dry-run mode documentation
+- `npx tsc --noEmit` passes clean, all 131 tests pass
+- `npm pack --dry-run` confirms agents/windsurf.json included in package
+- **Files:** README.md, package.json, src/version.ts, DEVELOPMENT.md, plan.md, activity.md

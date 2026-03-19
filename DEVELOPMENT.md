@@ -18,7 +18,8 @@ src/
 ├── version.ts                 # Single source of truth for package version
 ├── index.ts                   # Public API (currently just re-exports version)
 ├── schemas/
-│   └── agent-schema.ts        # TypeScript types for agent definition JSON files
+│   ├── agent-schema.ts        # TypeScript types for agent definition JSON files
+│   └── agent-definition.schema.json  # JSON Schema (draft-07) for validation
 ├── core/
 │   ├── detector.ts            # Filesystem detection of installed agents
 │   ├── schema-loader.ts       # Load + validate agent JSON definitions from agents/
@@ -38,7 +39,9 @@ src/
 │   ├── mcp-add.ts             # `agentsync mcp add` — interactive server addition
 │   ├── mcp-list.ts            # `agentsync mcp list` — list configured servers
 │   ├── mcp-diff.ts            # `agentsync mcp diff` — preview sync changes
-│   └── doctor.ts              # `agentsync doctor` — config health diagnostics
+│   ├── doctor.ts              # `agentsync doctor` — config health diagnostics
+│   ├── validate.ts            # `agentsync validate` — validate agent definition schemas
+│   └── export.ts              # `agentsync export` — generate standalone install script
 ├── utils/
 │   ├── output.ts              # ANSI-colored CLI output helpers
 │   ├── paths.ts               # Cross-platform path expansion (~, %APPDATA%)
@@ -51,7 +54,8 @@ agents/                        # Declarative agent definitions (JSON, shipped wi
 ├── codex.json
 ├── cursor.json
 ├── gemini-cli.json
-└── opencode.json
+├── opencode.json
+└── windsurf.json
 ```
 
 ## Architecture
@@ -80,6 +84,10 @@ AgentDefinition     NormalizedMCPConfig
      ┌────────┼────────┐
      ▼        ▼        ▼
   writeJSON  mergeJSON  writeTOML
+
+### Dry-run Mode
+
+The `link`, `unlink`, and `mcp sync` commands accept a `--dry-run` flag. When enabled, the commands compute results without writing to the filesystem — no symlinks, backups, or MCP configs are created or modified. The output is prefixed with `[dry-run]` to indicate preview mode.
 ```
 
 ### Key Design Decisions
@@ -185,6 +193,7 @@ npx vitest run -t "Claude Code"   # Run tests matching a pattern
 | `mcp/__tests__/writer.test.ts` | JSON/TOML file writing and merging |
 | `commands/__tests__/doctor.test.ts` | Health check diagnostics |
 | `commands/__tests__/mcp-diff.test.ts` | Diff computation |
+| `commands/__tests__/export.test.ts` | Export script generation |
 | `__tests__/e2e.test.ts` | Full workflow integration (init → link → mcp sync → unlink) |
 
 Transformer tests include **snapshots** for each agent's output. After changing transformation logic, update snapshots with:
