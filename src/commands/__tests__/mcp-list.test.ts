@@ -2,17 +2,16 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import os from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { mcpListCommand } from "../mcp-list.js";
 
 let tmpDir: string;
 let logs: string[];
 let errorLogs: string[];
-let originalCwd: string;
 
 beforeEach(() => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mcp-list-test-"));
   logs = [];
   errorLogs = [];
-  originalCwd = process.cwd();
 
   vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
     logs.push(args.map(String).join(" "));
@@ -23,7 +22,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  process.chdir(originalCwd);
   fs.rmSync(tmpDir, { recursive: true, force: true });
   vi.restoreAllMocks();
 });
@@ -67,10 +65,7 @@ describe("mcpListCommand", () => {
       }),
     );
 
-    process.chdir(tmpDir);
-
-    // Import after chdir so loadManifest finds our manifest
-    const { mcpListCommand } = await import("../mcp-list.js");
+    vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
     await mcpListCommand();
 
     const output = logs.join("\n");
@@ -91,9 +86,7 @@ describe("mcpListCommand", () => {
       JSON.stringify({ servers: {} }),
     );
 
-    process.chdir(tmpDir);
-
-    const { mcpListCommand } = await import("../mcp-list.js");
+    vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
     await mcpListCommand();
 
     const output = logs.join("\n");
@@ -104,9 +97,7 @@ describe("mcpListCommand", () => {
     writeManifest();
     fs.writeFileSync(path.join(tmpDir, "mcp.json"), "not valid json{{{");
 
-    process.chdir(tmpDir);
-
-    const { mcpListCommand } = await import("../mcp-list.js");
+    vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
     await mcpListCommand();
 
     const output = errorLogs.join("\n");
@@ -127,9 +118,7 @@ describe("mcpListCommand", () => {
       }),
     );
 
-    process.chdir(tmpDir);
-
-    const { mcpListCommand } = await import("../mcp-list.js");
+    vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
     await mcpListCommand();
 
     const output = logs.join("\n");
