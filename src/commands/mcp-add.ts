@@ -1,8 +1,9 @@
 /**
- * agentsync mcp add <name> — interactive prompts to add an MCP server to mcp.json.
+ * agentsync mcp add <name> — add an MCP server to mcp.json.
  *
- * Prompts for: transport, command/URL, args, env vars, headers.
- * Appends the server entry to the normalized mcp.json file.
+ * Supports two modes:
+ * - Non-interactive: when --transport + (--command or --url) are provided, skips prompts
+ * - Interactive: prompts for transport, command/URL, args, env vars, headers
  */
 
 import * as fs from "node:fs";
@@ -13,6 +14,79 @@ import type { NormalizedMCPConfig, NormalizedServer, EnvRef } from "../mcp/types
 import { loadManifest } from "../utils/manifest.js";
 import { success, error, info, warn } from "../utils/output.js";
 
+export interface McpAddFlags {
+  transport?: string;
+  command?: string;
+  url?: string;
+  args?: string;
+  env?: string[];
+}
+
+/**
+ * Build a NormalizedServer from CLI flags. Returns null if required flags
+ * are missing (caller should fall through to interactive mode).
+ */
+export function buildServerFromFlags(flags: McpAddFlags): NormalizedServer | null {
+  if (!flags.transport) return null;
+
+  if (flags.transport !== "stdio" && flags.transport !== "http") {
+    error(`Transport must be "stdio" or "http", got "${flags.transport}"`);
+    return null;
+  }
+
+  if (flags.transport === "stdio") {
+    if (!flags.command) return null;
+
+    const server: NormalizedServer = {
+      transport: "stdio",
+      command: flags.command,
+    };
+
+    if (flags.args) {
+      server.args = flags.args.split(",").map((a) => a.trim());
+    }
+
+    if (flags.env && flags.env.length > 0) {
+      server.env = parseEnvPairs(flags.env);
+    }
+
+    return server;
+  }
+
+  // http transport
+  if (!flags.url) return null;
+
+  const server: NormalizedServer = {
+    transport: "http",
+    url: flags.url,
+  };
+
+  if (flags.env && flags.env.length > 0) {
+    server.env = parseEnvPairs(flags.env);
+  }
+
+  return server;
+}
+
+/** Parse KEY=VAR pairs into an env record */
+function parseEnvPairs(pairs: string[]): Record<string, EnvRef> {
+  const env: Record<string, EnvRef> = {};
+  for (const pair of pairs) {
+    const eqIdx = pair.indexOf("=");
+    if (eqIdx === -1) {
+      warn(`Skipping invalid env pair "${pair}" — expected KEY=VAR format`);
+      continue;
+    }
+    const key = pair.slice(0, eqIdx);
+    const varName = pair.slice(eqIdx + 1);
+    if (!key || !varName) {
+      warn(`Skipping invalid env pair "${pair}" — empty key or value`);
+      continue;
+    }
+    env[key] = { $env: varName };
+  }
+  return env;
+}
 
 async function ask(
   rl: readline.Interface,
@@ -22,7 +96,7 @@ async function ask(
   return answer.trim();
 }
 
-export async function mcpAddCommand(name: string): Promise<void> {
+export async function mcpAddCommand(name: string, flags: McpAddFlags = {}): Promise<void> {
   const manifest = loadManifest();
   if (!manifest) return;
 
@@ -40,6 +114,17 @@ export async function mcpAddCommand(name: string): Promise<void> {
     warn(`Server "${name}" already exists in mcp.json. It will be overwritten.`);
   }
 
+  // Try non-interactive mode first
+  const serverFromFlags = buildServerFromFlags(flags);
+  if (serverFromFlags) {
+    config.servers[name] = serverFromFlags;
+    fs.writeFileSync(mcpPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
+    success(`Added server "${name}" to mcp.json`);
+    info("Run `agentsync mcp sync` to generate per-agent configs.");
+    return;
+  }
+
+  // Fall through to interactive mode
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,

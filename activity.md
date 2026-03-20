@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-20
-**Tasks Completed:** 3/8
-**Current Task:** FEAT-014 — Add non-interactive `mcp add` with CLI flags
+**Tasks Completed:** 4/8
+**Current Task:** TEST-009 — Add tests for non-interactive `mcp add`
 
 ---
 
@@ -34,4 +34,10 @@
 - **Category:** test
 - **Changes:** Added 3 tests for the `init --from` feature: (1) cloning a valid agentsync config repo via local path, (2) error when cloned repo has no agentsync.json, (3) warn and exit early when target already has agentsync.json. Tests create real git repos in temp directories using simple-git.
 - **Files modified:** `src/commands/__tests__/init.test.ts` (new)
+- **Verification:** `npx tsc --noEmit` passes. 140 tests pass.
+
+### 2026-03-20 — FEAT-014: Add non-interactive `mcp add` with CLI flags
+- **Category:** feature
+- **Changes:** Added CLI flags to `mcp add` command: `--transport <type>`, `--command <cmd>`, `--url <url>`, `--args <csv>`, `--env <pair...>`. When sufficient flags are provided (--transport + --command for stdio, or --transport + --url for http), the command skips interactive prompts entirely. Extracted `buildServerFromFlags()` as a named export for testability. The `--env` flag accepts repeatable KEY=VAR pairs. Insufficient flags fall through to interactive mode.
+- **Files modified:** `src/cli.ts`, `src/commands/mcp-add.ts`
 - **Verification:** `npx tsc --noEmit` passes. 140 tests pass.

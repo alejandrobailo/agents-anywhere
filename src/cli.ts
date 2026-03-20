@@ -104,8 +104,13 @@ mcp
 mcp
   .command("add <name>")
   .description("Add an MCP server to the normalized mcp.json")
-  .action(async (name: string) => {
-    await mcpAddCommand(name);
+  .option("--transport <type>", "Transport type: stdio or http")
+  .option("--command <cmd>", "Command to run (stdio transport)")
+  .option("--url <url>", "Server URL (http transport)")
+  .option("--args <csv>", "Comma-separated arguments (stdio transport)")
+  .option("--env <pair...>", "Environment variables as KEY=VAR pairs")
+  .action(async (name: string, opts: { transport?: string; command?: string; url?: string; args?: string; env?: string[] }) => {
+    await mcpAddCommand(name, opts);
   });
 
 mcp

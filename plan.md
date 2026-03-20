@@ -75,7 +75,7 @@ Fix the build bug, add the most-requested missing feature (`init --from <git-url
       "When flags are insufficient (e.g. --transport but no --command), fall through to interactive mode",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-009",
