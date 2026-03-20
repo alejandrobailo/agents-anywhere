@@ -136,7 +136,7 @@ Fix the build bug, add the most-requested missing feature (`init --from <git-url
       "Run npm run build && node dist/cli.js validate — verify no double shebang",
       "Run npm pack --dry-run — verify package contents"
     ],
-    "passes": false
+    "passes": true
   }
 ]
 ```

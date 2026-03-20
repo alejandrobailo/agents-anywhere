@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-20
-**Tasks Completed:** 7/8
-**Current Task:** RELEASE-003 — Bump to v0.4.0, update README, verify package
+**Tasks Completed:** 8/8
+**Current Task:** All tasks complete
 
 ---
 
@@ -59,3 +59,9 @@
 - **Changes:** Added `agent-definition-schema-data.ts` to the project structure (inlined schema for bundle compatibility). Added 6 new test files to the test organization table (`validate.test.ts`, `init.test.ts`, `mcp-add.test.ts`, `status.test.ts`, `agents.test.ts`, `mcp-list.test.ts`). Noted in Build section that JSON Schema is inlined as a TS constant (not read from disk at runtime). Documented that `getAgentsDir()` is exported from `schema-loader.ts` and shared by `validate.ts`. Clarified that `src/cli.ts` must not have its own shebang.
 - **Files modified:** `DEVELOPMENT.md`
 - **Verification:** `npx tsc --noEmit` passes.
+
+### 2026-03-20 — RELEASE-003: Bump to v0.4.0, update README, verify package
+- **Category:** release
+- **Changes:** Bumped version to 0.4.0 in `package.json` and `src/version.ts`. Added `init --from` to README Quick Start section and commands table. Added non-interactive `mcp add` usage example to README. Updated `mcp add` command description to reflect flag support. Verified: single shebang in build output, `node dist/cli.js validate` works, 159 tests pass, all 6 agent definitions bundled.
+- **Files modified:** `package.json`, `src/version.ts`, `README.md`
+- **Verification:** `npx tsc --noEmit` passes. 159 tests pass. Build output has single shebang. `node dist/cli.js validate` passes.

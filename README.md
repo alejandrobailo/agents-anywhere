@@ -14,6 +14,14 @@ npx agentsync link
 npx agentsync mcp sync
 ```
 
+Already have a config repo? Clone it on a new device:
+
+```bash
+npx agentsync init --from https://github.com/you/agentsync-config.git
+npx agentsync link
+npx agentsync mcp sync
+```
+
 ## Features
 
 ### Agent Detection & Linking
@@ -97,6 +105,24 @@ $ agentsync mcp sync
 [OK] Windsurf    — 2 servers written to ~/.codeium/windsurf/mcp_config.json
 ```
 
+### Non-interactive MCP Server Addition
+
+Add MCP servers from scripts or CI without interactive prompts:
+
+```bash
+# Add a stdio server
+agentsync mcp add github \
+  --transport stdio \
+  --command npx \
+  --args "-y,@modelcontextprotocol/server-github" \
+  --env GITHUB_TOKEN=GITHUB_TOKEN
+
+# Add an HTTP server
+agentsync mcp add sentry \
+  --transport http \
+  --url https://mcp.sentry.dev/sse
+```
+
 ### Device Sync
 
 Not a feature we build — it's just git.
@@ -117,12 +143,13 @@ The `init` command sets up a git `post-merge` hook so `git pull` automatically r
 | Command | Description |
 |---|---|
 | `agentsync init [dir]` | Detect agents, create config repo, scaffold structure |
+| `agentsync init --from <url>` | Clone an existing config repo from a git URL |
 | `agentsync link [agent]` | Create symlinks for all or a specific agent |
 | `agentsync unlink [agent]` | Remove symlinks, restore backups |
 | `agentsync status` | Show link status for each agent and file |
 | `agentsync agents` | List all known agents with install status |
 | `agentsync mcp sync` | Generate per-agent MCP configs from `mcp.json` |
-| `agentsync mcp add <name>` | Interactively add an MCP server to `mcp.json` |
+| `agentsync mcp add <name>` | Add an MCP server to `mcp.json` (interactive or with flags) |
 | `agentsync mcp list` | Show all configured MCP servers |
 | `agentsync mcp diff` | Preview what `mcp sync` would change |
 | `agentsync validate` | Validate all bundled agent definition JSON files against the schema |
