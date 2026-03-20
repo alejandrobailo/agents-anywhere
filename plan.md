@@ -1,11 +1,11 @@
-# agentsync Phase 3: Polish (v0.3.0)
+# agentsync Phase 4: Robustness & `init --from` (v0.4.0)
 
 ## Overview
 
-Expand agent coverage with Windsurf. Add `agentsync export` for shareable install scripts, JSON Schema validation for agent definitions, and `--dry-run` mode across all mutating commands. Improve robustness and developer experience.
+Fix the build bug, add the most-requested missing feature (`init --from <git-url>`), add non-interactive `mcp add` for scripting, and harden test coverage for untested commands. Prepare the CLI for broader adoption.
 
-**Reference:** `PRD.md` (Phase 3 section), `DEVELOPMENT.md` (architecture + conventions)
-**Prereq:** v0.2.0 complete (98 tests passing, 5 agents supported)
+**Reference:** `PRD.md` (Phase 4 section), `DEVELOPMENT.md` (architecture + conventions)
+**Prereq:** v0.3.0 complete + code review fixes (137 tests passing, 6 agents supported)
 
 ---
 
@@ -14,144 +14,129 @@ Expand agent coverage with Windsurf. Add `agentsync export` for shareable instal
 ```json
 [
   {
-    "id": "AGENT-004",
-    "category": "feature",
+    "id": "FIX-001",
+    "category": "fix",
     "priority": 1,
-    "description": "Create Windsurf agent definition (windsurf.json)",
+    "description": "Fix double shebang in dist/cli.js build output",
     "steps": [
-      "Create agents/windsurf.json following the existing pattern in agents/cursor.json",
-      "id: 'windsurf', name: 'Windsurf'",
-      "configDir: darwin '~/.codeium/windsurf', linux '~/.codeium/windsurf', win32 '%APPDATA%/codeium/windsurf'",
-      "detect: directory-exists at '~/.codeium/windsurf'",
-      "portable: ['mcp_config.json', 'memories/**', 'rules/**']",
-      "ignore: ['cache/**', 'logs/**', 'sessions/**', '*.backup.*']",
-      "credentials: []",
-      "instructions: { filename: 'rules', globalPath: '~/.codeium/windsurf/rules' }",
-      "mcp: configPath 'mcp_config.json', scope 'user', rootKey 'mcpServers', format 'json', writeMode 'standalone', envSyntax '${env:VAR}', envVarStyle 'inline', commandType 'string', envKey 'env'",
-      "transports: stdio → { typeField: 'type', typeValue: 'stdio' }, http → { typeField: 'type', typeValue: 'http', urlKey: 'serverUrl' }",
-      "Verify the definition loads correctly: run npx tsc --noEmit && npx vitest run"
+      "The bug: src/cli.ts has `#!/usr/bin/env node` on line 1, AND tsup.config.ts has `banner: { js: '#!/usr/bin/env node' }`. Both get emitted, producing a double shebang that crashes `node dist/cli.js`.",
+      "Remove the `#!/usr/bin/env node` line from src/cli.ts (line 1). Let tsup's banner handle it.",
+      "The banner also adds a shebang to dist/index.js (library entry) — this is harmless since Node.js strips hashbang comments before parsing.",
+      "Verify: `npm run build && head -3 dist/cli.js` should show exactly ONE shebang followed by 'use strict'.",
+      "Verify: `node dist/cli.js validate` should work without syntax errors.",
+      "Run npx tsc --noEmit && npx vitest run"
     ],
     "passes": true
   },
   {
-    "id": "TEST-004",
-    "category": "test",
+    "id": "FEAT-013",
+    "category": "feature",
     "priority": 2,
-    "description": "Add snapshot tests for Windsurf MCP transformation",
+    "description": "Add `agentsync init --from <git-url>` to clone an existing config repo",
     "steps": [
-      "In src/mcp/__tests__/transformer.test.ts, add describe('Windsurf') block",
-      "Test stdio server: verify ${env:VAR} syntax, standard transport types, mcpServers root key",
-      "Test http server: verify serverUrl key for HTTP URL (not 'url'), standard transport type",
-      "Add snapshot test for full Windsurf output",
-      "Update schema-loader tests to expect 6 agent definitions (up from 5)",
-      "Run npx vitest run — all tests must pass"
-    ],
-    "passes": true
-  },
-  {
-    "id": "FEAT-010",
-    "category": "feature",
-    "priority": 3,
-    "description": "Add --dry-run flag to all mutating commands (link, unlink, mcp sync)",
-    "steps": [
-      "Add a --dry-run option to the 'link', 'unlink', and 'mcp sync' commands in src/cli.ts",
-      "In src/core/linker.ts: add a dryRun parameter to linkAgent() and unlinkAgent(). When true, compute results without calling symlinkSync, renameSync, unlinkSync, or mkdirSync. Return the same LinkResult[]/UnlinkResult[] arrays so the caller can display what would happen.",
-      "In src/commands/link.ts: accept dryRun option, pass to linkAgent(), prefix output with '[dry-run]' when active",
-      "In src/commands/unlink.ts: accept dryRun option, pass to unlinkAgent(), prefix output with '[dry-run]'",
-      "In src/commands/mcp-sync.ts: accept dryRun option, skip writer calls (writeJSON/mergeJSON/writeTOML) when true, show what files would be written",
+      "In src/cli.ts: add `--from <url>` option to the init command",
+      "In src/commands/init.ts: add a new code path when `--from` is provided:",
+      "  1. Use simple-git to `git clone <url> <targetDir>` (targetDir defaults to ~/agentsync-config)",
+      "  2. Verify that agentsync.json exists in the cloned repo — if not, error with 'Not an agentsync config repo'",
+      "  3. Print success message: 'Cloned config repo to <dir>'",
+      "  4. Print: 'Run `agentsync link && agentsync mcp sync` to connect your agents.'",
+      "If the target directory already contains agentsync.json, warn and exit (same as current behavior)",
       "Run npx tsc --noEmit"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "TEST-005",
+    "id": "TEST-008",
     "category": "test",
-    "priority": 4,
-    "description": "Add tests for --dry-run mode",
+    "priority": 3,
+    "description": "Add tests for `init --from` command",
     "steps": [
-      "In src/core/__tests__/linker.test.ts: add tests verifying linkAgent with dryRun=true returns results but does NOT create symlinks on disk",
-      "Add test verifying unlinkAgent with dryRun=true returns results but does NOT remove symlinks or restore backups",
-      "In src/__tests__/e2e.test.ts: add test calling linkAgent(agentDef, repoDir, true) then verify no symlinks exist in the config dir",
+      "Create src/commands/__tests__/init.test.ts",
+      "Test setup: create a temp directory, create a valid agentsync repo structure (agentsync.json + mcp.json), init as git repo, make initial commit",
+      "Test: init --from with a local file:// URL clones the repo and agentsync.json is present in the target",
+      "Test: init --from with a repo that has no agentsync.json errors with the expected message",
+      "Test: init --from when target dir already has agentsync.json warns and exits early",
+      "Use temp directories in os.tmpdir() for both source and target repos",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "FEAT-011",
+    "id": "FEAT-014",
     "category": "feature",
-    "priority": 5,
-    "description": "Add JSON Schema validation for agent definition files",
+    "priority": 4,
+    "description": "Add non-interactive `mcp add` with CLI flags for scripting",
     "steps": [
-      "Create src/schemas/agent-definition.schema.json — a JSON Schema (draft-07) describing the full AgentDefinition structure: required fields (id, name, configDir, detect, portable, ignore, credentials, instructions, mcp), nested object shapes (PlatformPaths, DetectRule, MCPConfig, TransportMap), enums (writeMode, commandType, scope, format, envVarStyle, detect.type)",
-      "In src/core/schema-loader.ts: import the JSON schema and use a lightweight validator. Since we want zero new dependencies, implement a simple validateAgainstSchema() function that checks: required fields exist, field types match (string, object, array), enum values are valid. This replaces the current hand-rolled validateAgentDefinition().",
-      "The new validation should catch all current checks plus: missing envKey, missing transports, invalid enum values for writeMode/commandType/scope/format/envVarStyle",
-      "Add a CLI command 'agentsync validate' in src/cli.ts that loads all agent definitions and reports validation results — useful for contributors testing their agent JSON",
-      "Create src/commands/validate.ts implementing the validateCommand()",
+      "In src/cli.ts: add options to the `mcp add` command: --transport <type>, --command <cmd>, --url <url>, --args <csv>, --env <KEY=VAR> (repeatable via Commander's variadic option or .option('--env <pair...>'))",
+      "In src/commands/mcp-add.ts: detect when all required flags are present (--transport + either --command or --url) and skip interactive prompts",
+      "For stdio: require --transport stdio --command <cmd>. --args is optional (comma-separated).",
+      "For http: require --transport http --url <url>.",
+      "--env accepts KEY=VAR pairs: `--env GITHUB_TOKEN=GITHUB_TOKEN --env ANOTHER=VALUE`",
+      "When flags are insufficient (e.g. --transport but no --command), fall through to interactive mode",
       "Run npx tsc --noEmit"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "TEST-006",
+    "id": "TEST-009",
+    "category": "test",
+    "priority": 5,
+    "description": "Add tests for non-interactive `mcp add`",
+    "steps": [
+      "Create src/commands/__tests__/mcp-add.test.ts",
+      "Extract the non-interactive server-building logic into a testable function (e.g. buildServerFromFlags()) that returns a NormalizedServer",
+      "Test: stdio server with --transport stdio --command npx --args '-y,@mcp/server-github' --env GITHUB_TOKEN=GITHUB_TOKEN produces correct NormalizedServer",
+      "Test: http server with --transport http --url https://example.com produces correct NormalizedServer",
+      "Test: missing --command for stdio returns null/error",
+      "Test: missing --url for http returns null/error",
+      "Test: multiple --env flags are parsed correctly",
+      "Run npx vitest run — all tests must pass"
+    ],
+    "passes": false
+  },
+  {
+    "id": "TEST-010",
     "category": "test",
     "priority": 6,
-    "description": "Add tests for JSON Schema validation",
+    "description": "Add tests for status, agents, and mcp-list commands",
     "steps": [
-      "In src/core/__tests__/schema-loader.test.ts: add tests for the new schema validation — missing required fields, invalid enum values, wrong types",
-      "Test that all 6 bundled agent definitions pass validation",
-      "Test that a definition with writeMode 'invalid' is rejected",
-      "Test that a definition missing 'transports' is rejected",
+      "Create src/commands/__tests__/status.test.ts — mock loadManifest() and loadAgentById() to return controlled data, mock getStatus() to return known link statuses, capture console.log output, verify heading + per-agent status lines",
+      "Create src/commands/__tests__/agents.test.ts — mock detectAgents() to return a mix of installed/not-installed agents, capture console output, verify agent names and install badges appear",
+      "Create src/commands/__tests__/mcp-list.test.ts — create a temp agentsync repo with a real mcp.json containing 2 servers, mock process.cwd() to point there, call mcpListCommand(), verify server names and transport info appear in output",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "FEAT-012",
-    "category": "feature",
+    "id": "DOCS-001",
+    "category": "docs",
     "priority": 7,
-    "description": "Implement `agentsync export` command to generate a standalone install script",
+    "description": "Update DEVELOPMENT.md with code review changes and new files",
     "steps": [
-      "Create src/commands/export.ts",
-      "The command reads the current agentsync.json manifest and mcp.json",
-      "Generates a self-contained shell script (install.sh) that: creates the config repo directory structure, writes mcp.json content inline, writes per-agent MCP configs inline (pre-transformed), creates symlinks for portable files",
-      "The script should be runnable without agentsync installed — pure bash",
-      "Output the script to stdout (user can redirect: agentsync export > install.sh)",
-      "Wire up in src/cli.ts as 'agentsync export'",
+      "Add src/schemas/agent-definition-schema-data.ts to the project structure (note: inlined schema for bundle compatibility)",
+      "Add src/commands/__tests__/validate.test.ts to the test table",
+      "Add src/commands/__tests__/init.test.ts, mcp-add.test.ts, status.test.ts, agents.test.ts, mcp-list.test.ts to the test table",
+      "Note in the Build section that the JSON Schema is inlined as a TS constant (not read from disk at runtime) for bundle compatibility",
+      "Note that getAgentsDir() is exported from schema-loader.ts and shared by validate.ts",
       "Run npx tsc --noEmit"
     ],
-    "passes": true
+    "passes": false
   },
   {
-    "id": "TEST-007",
-    "category": "test",
-    "priority": 8,
-    "description": "Add tests for export command",
-    "steps": [
-      "Create src/commands/__tests__/export.test.ts",
-      "Test that the generated script contains the expected mcp.json content",
-      "Test that the script includes mkdir -p calls for agent config dirs",
-      "Test that the script includes symlink creation for portable files",
-      "Test that the script is valid bash (starts with #!/bin/bash, no syntax errors in template)",
-      "Run npx vitest run — all tests must pass"
-    ],
-    "passes": true
-  },
-  {
-    "id": "RELEASE-002",
+    "id": "RELEASE-003",
     "category": "release",
-    "priority": 9,
-    "description": "Update README, bump version to 0.3.0, verify package",
+    "priority": 8,
+    "description": "Bump to v0.4.0, update README, verify package",
     "steps": [
-      "Update README.md supported agents table: add Windsurf with config details",
-      "Add 'export' and 'validate' to the commands table in README.md",
-      "Document --dry-run flag in the commands section",
-      "Bump version in package.json and src/version.ts to 0.3.0",
-      "Update DEVELOPMENT.md if any new patterns were introduced",
+      "Bump version in package.json and src/version.ts to 0.4.0",
+      "Add `init --from` to the README commands table and Quick Start section",
+      "Add non-interactive mcp add example to README",
       "Run npx tsc --noEmit",
       "Run npx vitest run — all tests must pass",
-      "Run npm pack --dry-run — verify agents/windsurf.json is included"
+      "Run npm run build && node dist/cli.js validate — verify no double shebang",
+      "Run npm pack --dry-run — verify package contents"
     ],
-    "passes": true
+    "passes": false
   }
 ]
 ```
