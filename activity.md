@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-20
-**Tasks Completed:** 4/8
-**Current Task:** TEST-009 — Add tests for non-interactive `mcp add`
+**Tasks Completed:** 5/8
+**Current Task:** TEST-010 — Add tests for status, agents, and mcp-list commands
 
 ---
 
@@ -41,3 +41,9 @@
 - **Changes:** Added CLI flags to `mcp add` command: `--transport <type>`, `--command <cmd>`, `--url <url>`, `--args <csv>`, `--env <pair...>`. When sufficient flags are provided (--transport + --command for stdio, or --transport + --url for http), the command skips interactive prompts entirely. Extracted `buildServerFromFlags()` as a named export for testability. The `--env` flag accepts repeatable KEY=VAR pairs. Insufficient flags fall through to interactive mode.
 - **Files modified:** `src/cli.ts`, `src/commands/mcp-add.ts`
 - **Verification:** `npx tsc --noEmit` passes. 140 tests pass.
+
+### 2026-03-20 — TEST-009: Add tests for non-interactive `mcp add`
+- **Category:** test
+- **Changes:** Added 8 tests for `buildServerFromFlags()`: stdio with command/args/env, http with url, missing --command for stdio returns null, missing --url for http returns null, multiple --env flags parsed correctly, no transport returns null, invalid transport returns null, stdio without optional args/env.
+- **Files modified:** `src/commands/__tests__/mcp-add.test.ts` (new)
+- **Verification:** `npx tsc --noEmit` passes. 148 tests pass.

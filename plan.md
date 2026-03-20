@@ -92,7 +92,7 @@ Fix the build bug, add the most-requested missing feature (`init --from <git-url
       "Test: multiple --env flags are parsed correctly",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-010",
