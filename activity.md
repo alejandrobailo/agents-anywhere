@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-20
-**Tasks Completed:** 2/8
-**Current Task:** TEST-008 — Add tests for `init --from` command
+**Tasks Completed:** 3/8
+**Current Task:** FEAT-014 — Add non-interactive `mcp add` with CLI flags
 
 ---
 
@@ -29,3 +29,9 @@
 - **Changes:** Added `--from <url>` option to the `init` command. When provided, clones the given git URL to the target directory (default `~/agentsync-config`), verifies the cloned repo contains `agentsync.json`, and prints instructions to link and sync. If target already has `agentsync.json`, warns and exits early. If the cloned repo has no `agentsync.json`, throws an error.
 - **Files modified:** `src/cli.ts`, `src/commands/init.ts`
 - **Verification:** `npx tsc --noEmit` passes. 137 tests pass.
+
+### 2026-03-20 — TEST-008: Add tests for `init --from` command
+- **Category:** test
+- **Changes:** Added 3 tests for the `init --from` feature: (1) cloning a valid agentsync config repo via local path, (2) error when cloned repo has no agentsync.json, (3) warn and exit early when target already has agentsync.json. Tests create real git repos in temp directories using simple-git.
+- **Files modified:** `src/commands/__tests__/init.test.ts` (new)
+- **Verification:** `npx tsc --noEmit` passes. 140 tests pass.

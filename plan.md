@@ -59,7 +59,7 @@ Fix the build bug, add the most-requested missing feature (`init --from <git-url
       "Use temp directories in os.tmpdir() for both source and target repos",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FEAT-014",
