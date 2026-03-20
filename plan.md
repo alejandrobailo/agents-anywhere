@@ -120,7 +120,7 @@ Fix the build bug, add the most-requested missing feature (`init --from <git-url
       "Note that getAgentsDir() is exported from schema-loader.ts and shared by validate.ts",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "RELEASE-003",

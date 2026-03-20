@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-20
-**Tasks Completed:** 6/8
-**Current Task:** DOCS-001 — Update DEVELOPMENT.md with code review changes and new files
+**Tasks Completed:** 7/8
+**Current Task:** RELEASE-003 — Bump to v0.4.0, update README, verify package
 
 ---
 
@@ -53,3 +53,9 @@
 - **Changes:** Added 3 test files: (1) `status.test.ts` — 4 tests covering no manifest, empty agents, per-agent link status display, and missing agent definition warning. (2) `agents.test.ts` — 3 tests covering installed/not-installed display, fully linked badge, and partial link count. (3) `mcp-list.test.ts` — 4 tests covering server listing with transport/env info, empty servers warning, invalid mcp.json error, and http server url display. Uses vi.mock for status/agents tests and real temp dirs with process.chdir for mcp-list tests.
 - **Files modified:** `src/commands/__tests__/status.test.ts` (new), `src/commands/__tests__/agents.test.ts` (new), `src/commands/__tests__/mcp-list.test.ts` (new)
 - **Verification:** `npx tsc --noEmit` passes. 159 tests pass.
+
+### 2026-03-20 — DOCS-001: Update DEVELOPMENT.md with code review changes and new files
+- **Category:** docs
+- **Changes:** Added `agent-definition-schema-data.ts` to the project structure (inlined schema for bundle compatibility). Added 6 new test files to the test organization table (`validate.test.ts`, `init.test.ts`, `mcp-add.test.ts`, `status.test.ts`, `agents.test.ts`, `mcp-list.test.ts`). Noted in Build section that JSON Schema is inlined as a TS constant (not read from disk at runtime). Documented that `getAgentsDir()` is exported from `schema-loader.ts` and shared by `validate.ts`. Clarified that `src/cli.ts` must not have its own shebang.
+- **Files modified:** `DEVELOPMENT.md`
+- **Verification:** `npx tsc --noEmit` passes.

@@ -19,7 +19,8 @@ src/
 ├── index.ts                   # Public API (currently just re-exports version)
 ├── schemas/
 │   ├── agent-schema.ts        # TypeScript types for agent definition JSON files
-│   └── agent-definition.schema.json  # JSON Schema (draft-07) for validation
+│   ├── agent-definition.schema.json  # JSON Schema (draft-07) for validation
+│   └── agent-definition-schema-data.ts  # Inlined JSON Schema as TS constant (bundle compatibility)
 ├── core/
 │   ├── detector.ts            # Filesystem detection of installed agents
 │   ├── schema-loader.ts       # Load + validate agent JSON definitions from agents/
@@ -194,6 +195,12 @@ npx vitest run -t "Claude Code"   # Run tests matching a pattern
 | `commands/__tests__/doctor.test.ts` | Health check diagnostics |
 | `commands/__tests__/mcp-diff.test.ts` | Diff computation |
 | `commands/__tests__/export.test.ts` | Export script generation |
+| `commands/__tests__/validate.test.ts` | Agent definition schema validation |
+| `commands/__tests__/init.test.ts` | Init command and `--from` clone flow |
+| `commands/__tests__/mcp-add.test.ts` | Non-interactive `mcp add` (buildServerFromFlags) |
+| `commands/__tests__/status.test.ts` | Status display and link reporting |
+| `commands/__tests__/agents.test.ts` | Agent listing with install/link badges |
+| `commands/__tests__/mcp-list.test.ts` | MCP server listing with transport info |
 | `__tests__/e2e.test.ts` | Full workflow integration (init → link → mcp sync → unlink) |
 
 Transformer tests include **snapshots** for each agent's output. After changing transformation logic, update snapshots with:
@@ -220,8 +227,11 @@ npm run build    # tsup + copies agents/ to dist/agents/
 - CJS entry: `dist/cli.js` (used by the `agentsync` bin command)
 - ESM entry: `dist/index.mjs` (public API — currently only exports `version`)
 - Agent definitions are copied to `dist/agents/` and located at runtime via `__dirname`
+- The JSON Schema for agent definition validation is inlined as a TypeScript constant in `src/schemas/agent-definition-schema-data.ts` (not read from disk at runtime) for bundle compatibility
 
-The shebang (`#!/usr/bin/env node`) is added by tsup's `banner` config to both builds. When running `dist/cli.js` directly with `node`, strip the first line or use `npx agentsync`.
+The shebang (`#!/usr/bin/env node`) is added by tsup's `banner` config to both builds. `src/cli.ts` must NOT have its own shebang — tsup's banner is the single source.
+
+**Shared utilities.** `getAgentsDir()` is exported from `schema-loader.ts` and reused by `validate.ts` to locate the `agents/` directory. Do not duplicate this logic.
 
 ## Adding a New Agent
 
