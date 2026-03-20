@@ -16,7 +16,7 @@ import os from "node:os";
 import { simpleGit } from "simple-git";
 import { detectAgents } from "../core/detector.js";
 import type { DetectedAgent } from "../core/detector.js";
-import { heading, success, info, warn, dim } from "../utils/output.js";
+import { heading, success, error, info, warn, dim } from "../utils/output.js";
 
 const DEFAULT_REPO_DIR = path.join(os.homedir(), "agentsync-config");
 
@@ -141,13 +141,19 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
   heading("Cloning config repo...");
 
   const git = simpleGit();
-  await git.clone(url, targetDir);
+  try {
+    await git.clone(url, targetDir);
+  } catch (err) {
+    error(`Failed to clone ${url}: ${(err as Error).message}`);
+    return;
+  }
 
   // Verify the cloned repo is a valid agentsync config repo
   if (!fs.existsSync(path.join(targetDir, "agentsync.json"))) {
-    throw new Error(
-      `Not an agentsync config repo: ${url} (no agentsync.json found)`,
-    );
+    // Clean up the cloned directory since it's not a valid config repo
+    fs.rmSync(targetDir, { recursive: true, force: true });
+    error(`Not an agentsync config repo: ${url} (no agentsync.json found)`);
+    return;
   }
 
   success(`Cloned config repo to ${targetDir}`);
