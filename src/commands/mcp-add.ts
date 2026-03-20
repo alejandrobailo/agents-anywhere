@@ -114,17 +114,21 @@ export async function mcpAddCommand(name: string, flags: McpAddFlags = {}): Prom
     warn(`Server "${name}" already exists in mcp.json. It will be overwritten.`);
   }
 
-  // Try non-interactive mode first
-  const serverFromFlags = buildServerFromFlags(flags);
-  if (serverFromFlags) {
-    config.servers[name] = serverFromFlags;
-    fs.writeFileSync(mcpPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
-    success(`Added server "${name}" to mcp.json`);
-    info("Run `agentsync mcp sync` to generate per-agent configs.");
+  // Try non-interactive mode when flags are provided
+  if (flags.transport) {
+    const serverFromFlags = buildServerFromFlags(flags);
+    if (serverFromFlags) {
+      config.servers[name] = serverFromFlags;
+      fs.writeFileSync(mcpPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
+      success(`Added server "${name}" to mcp.json`);
+      info("Run `agentsync mcp sync` to generate per-agent configs.");
+    }
+    // If transport was provided but buildServerFromFlags returned null,
+    // it already printed an error — don't fall through to interactive
     return;
   }
 
-  // Fall through to interactive mode
+  // Interactive mode (no flags provided)
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
