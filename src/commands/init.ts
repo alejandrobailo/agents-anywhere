@@ -34,8 +34,20 @@ const GITIGNORE = `# agentsync generated
 Thumbs.db
 `;
 
-export async function initCommand(repoDir?: string): Promise<void> {
+export interface InitOptions {
+  from?: string;
+}
+
+export async function initCommand(
+  repoDir?: string,
+  options?: InitOptions,
+): Promise<void> {
   const targetDir = repoDir ?? DEFAULT_REPO_DIR;
+
+  if (options?.from) {
+    await initFromRemote(options.from, targetDir);
+    return;
+  }
 
   heading("Detecting installed AI coding agents...");
 
@@ -116,6 +128,30 @@ export async function initCommand(repoDir?: string): Promise<void> {
     `\nCreated config repo at ${dim(targetDir)}`,
   );
   info("Run `agentsync link` to connect your agents.");
+}
+
+async function initFromRemote(url: string, targetDir: string): Promise<void> {
+  // Check if target already has agentsync.json
+  if (fs.existsSync(path.join(targetDir, "agentsync.json"))) {
+    warn(`Config repo already exists at ${targetDir}`);
+    info("Run `agentsync link` to connect your agents.");
+    return;
+  }
+
+  heading("Cloning config repo...");
+
+  const git = simpleGit();
+  await git.clone(url, targetDir);
+
+  // Verify the cloned repo is a valid agentsync config repo
+  if (!fs.existsSync(path.join(targetDir, "agentsync.json"))) {
+    throw new Error(
+      `Not an agentsync config repo: ${url} (no agentsync.json found)`,
+    );
+  }
+
+  success(`Cloned config repo to ${targetDir}`);
+  info("Run `agentsync link && agentsync mcp sync` to connect your agents.");
 }
 
 function buildManifest(

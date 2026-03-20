@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-20
-**Tasks Completed:** 1/8
-**Current Task:** FEAT-013 — Add `agentsync init --from <git-url>`
+**Tasks Completed:** 2/8
+**Current Task:** TEST-008 — Add tests for `init --from` command
 
 ---
 
@@ -23,3 +23,9 @@
 - **Changes:** Removed `#!/usr/bin/env node` from line 1 of `src/cli.ts`. The shebang is already added by tsup's `banner` config in `tsup.config.ts`, so both were emitting it, causing a double shebang in `dist/cli.js` that broke `node dist/cli.js`.
 - **Files modified:** `src/cli.ts`
 - **Verification:** `head -3 dist/cli.js` shows exactly one shebang. `node dist/cli.js validate` runs without errors. 137 tests pass.
+
+### 2026-03-20 — FEAT-013: Add `init --from <git-url>`
+- **Category:** feature
+- **Changes:** Added `--from <url>` option to the `init` command. When provided, clones the given git URL to the target directory (default `~/agentsync-config`), verifies the cloned repo contains `agentsync.json`, and prints instructions to link and sync. If target already has `agentsync.json`, warns and exits early. If the cloned repo has no `agentsync.json`, throws an error.
+- **Files modified:** `src/cli.ts`, `src/commands/init.ts`
+- **Verification:** `npx tsc --noEmit` passes. 137 tests pass.

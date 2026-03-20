@@ -29,8 +29,9 @@ program
     "Detect installed agents, create config repo, and scaffold structure",
   )
   .argument("[dir]", "Config repo directory (default: ~/agentsync-config)")
-  .action(async (dir?: string) => {
-    await initCommand(dir);
+  .option("--from <url>", "Clone an existing agentsync config repo from a git URL")
+  .action(async (dir?: string, opts?: { from?: string }) => {
+    await initCommand(dir, { from: opts?.from });
   });
 
 program

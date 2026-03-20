@@ -43,7 +43,7 @@ Fix the build bug, add the most-requested missing feature (`init --from <git-url
       "If the target directory already contains agentsync.json, warn and exit (same as current behavior)",
       "Run npx tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "TEST-008",
