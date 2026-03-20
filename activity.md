@@ -3,8 +3,8 @@
 ## Current Status
 
 **Last Updated:** 2026-03-20
-**Tasks Completed:** 5/8
-**Current Task:** TEST-010 — Add tests for status, agents, and mcp-list commands
+**Tasks Completed:** 6/8
+**Current Task:** DOCS-001 — Update DEVELOPMENT.md with code review changes and new files
 
 ---
 
@@ -47,3 +47,9 @@
 - **Changes:** Added 8 tests for `buildServerFromFlags()`: stdio with command/args/env, http with url, missing --command for stdio returns null, missing --url for http returns null, multiple --env flags parsed correctly, no transport returns null, invalid transport returns null, stdio without optional args/env.
 - **Files modified:** `src/commands/__tests__/mcp-add.test.ts` (new)
 - **Verification:** `npx tsc --noEmit` passes. 148 tests pass.
+
+### 2026-03-20 — TEST-010: Add tests for status, agents, and mcp-list commands
+- **Category:** test
+- **Changes:** Added 3 test files: (1) `status.test.ts` — 4 tests covering no manifest, empty agents, per-agent link status display, and missing agent definition warning. (2) `agents.test.ts` — 3 tests covering installed/not-installed display, fully linked badge, and partial link count. (3) `mcp-list.test.ts` — 4 tests covering server listing with transport/env info, empty servers warning, invalid mcp.json error, and http server url display. Uses vi.mock for status/agents tests and real temp dirs with process.chdir for mcp-list tests.
+- **Files modified:** `src/commands/__tests__/status.test.ts` (new), `src/commands/__tests__/agents.test.ts` (new), `src/commands/__tests__/mcp-list.test.ts` (new)
+- **Verification:** `npx tsc --noEmit` passes. 159 tests pass.

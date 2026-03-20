@@ -105,7 +105,7 @@ Fix the build bug, add the most-requested missing feature (`init --from <git-url
       "Create src/commands/__tests__/mcp-list.test.ts — create a temp agentsync repo with a real mcp.json containing 2 servers, mock process.cwd() to point there, call mcpListCommand(), verify server names and transport info appear in output",
       "Run npx vitest run — all tests must pass"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DOCS-001",
