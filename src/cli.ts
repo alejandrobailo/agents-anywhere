@@ -13,6 +13,9 @@ import { mcpDiffCommand } from "./commands/mcp-diff.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { validateCommand } from "./commands/validate.js";
 import { exportCommand } from "./commands/export.js";
+import { enableCommand } from "./commands/enable.js";
+import { disableCommand } from "./commands/disable.js";
+import { mcpRemoveCommand } from "./commands/mcp-remove.js";
 
 const program = new Command();
 
@@ -65,6 +68,20 @@ program
   });
 
 program
+  .command("enable <agent>")
+  .description("Enable an agent in the manifest")
+  .action(async (agent: string) => {
+    await enableCommand(agent);
+  });
+
+program
+  .command("disable <agent>")
+  .description("Disable an agent in the manifest")
+  .action(async (agent: string) => {
+    await disableCommand(agent);
+  });
+
+program
   .command("doctor")
   .description("Diagnose config health: broken symlinks, credentials, stale configs")
   .action(async () => {
@@ -111,6 +128,13 @@ mcp
   .option("--env <pair...>", "Environment variables as KEY=VAR pairs")
   .action(async (name: string, opts: { transport?: string; command?: string; url?: string; args?: string; env?: string[] }) => {
     await mcpAddCommand(name, opts);
+  });
+
+mcp
+  .command("remove <name>")
+  .description("Remove an MCP server from mcp.json")
+  .action(async (name: string) => {
+    await mcpRemoveCommand(name);
   });
 
 mcp
