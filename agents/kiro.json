@@ -1,0 +1,39 @@
+{
+  "id": "kiro",
+  "name": "Kiro",
+  "configDir": {
+    "darwin": "~/.kiro",
+    "linux": "~/.kiro",
+    "win32": "%APPDATA%/kiro"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.kiro"
+  },
+  "portable": [],
+  "ignore": [
+    "cache/**",
+    "sessions/**",
+    "*.backup.*"
+  ],
+  "credentials": [],
+  "instructions": {
+    "filename": "steering",
+    "globalPath": "~/.kiro/steering"
+  },
+  "mcp": {
+    "configPath": "settings/mcp.json",
+    "scope": "user",
+    "rootKey": "mcpServers",
+    "format": "json",
+    "writeMode": "standalone",
+    "envSyntax": "${VAR}",
+    "transports": {
+      "stdio": { "typeField": "type", "typeValue": "stdio" },
+      "http": { "typeField": "type", "typeValue": "http" }
+    },
+    "commandType": "string",
+    "envKey": "env",
+    "envVarStyle": "inline"
+  }
+}

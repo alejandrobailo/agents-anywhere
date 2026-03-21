@@ -13,7 +13,7 @@ describe("schema-loader", () => {
   describe("loadAllAgentDefinitions", () => {
     it("loads all agent definitions from the agents/ directory", () => {
       const agents = loadAllAgentDefinitions();
-      expect(agents.length).toBe(8);
+      expect(agents.length).toBe(9);
 
       const ids = agents.map((a) => a.id);
       expect(ids).toContain("claude-code");
@@ -24,6 +24,7 @@ describe("schema-loader", () => {
       expect(ids).toContain("windsurf");
       expect(ids).toContain("github-copilot");
       expect(ids).toContain("amazon-q");
+      expect(ids).toContain("kiro");
     });
   });
 
@@ -142,9 +143,9 @@ describe("schema-loader", () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it("all 8 bundled agent definitions pass validation", () => {
+    it("all 9 bundled agent definitions pass validation", () => {
       const agents = loadAllAgentDefinitions();
-      expect(agents.length).toBe(8);
+      expect(agents.length).toBe(9);
       for (const agent of agents) {
         const result = validateAgainstSchema(agent);
         expect(result.valid).toBe(true);
