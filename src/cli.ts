@@ -16,6 +16,8 @@ import { exportCommand } from "./commands/export.js";
 import { enableCommand } from "./commands/enable.js";
 import { disableCommand } from "./commands/disable.js";
 import { mcpRemoveCommand } from "./commands/mcp-remove.js";
+import { pushCommand } from "./commands/push.js";
+import { pullCommand } from "./commands/pull.js";
 
 const program = new Command();
 
@@ -102,6 +104,20 @@ program
   )
   .action(async () => {
     await exportCommand();
+  });
+
+program
+  .command("push")
+  .description("Stage, commit, and push config changes to remote")
+  .action(async () => {
+    await pushCommand();
+  });
+
+program
+  .command("pull")
+  .description("Pull config changes from remote (post-merge hook re-links)")
+  .action(async () => {
+    await pullCommand();
   });
 
 const mcp = program
