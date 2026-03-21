@@ -1,0 +1,39 @@
+{
+  "id": "antigravity",
+  "name": "Google Antigravity",
+  "configDir": {
+    "darwin": "~/.gemini/antigravity",
+    "linux": "~/.gemini/antigravity",
+    "win32": "%APPDATA%/gemini/antigravity"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.gemini/antigravity"
+  },
+  "portable": [],
+  "ignore": [
+    "cache/**",
+    "sessions/**",
+    "*.backup.*"
+  ],
+  "credentials": [],
+  "instructions": {
+    "filename": "GEMINI.md",
+    "globalPath": "~/.gemini/GEMINI.md"
+  },
+  "mcp": {
+    "configPath": "mcp_config.json",
+    "scope": "user",
+    "rootKey": "mcpServers",
+    "format": "json",
+    "writeMode": "standalone",
+    "envSyntax": "${VAR}",
+    "transports": {
+      "stdio": { "typeField": "type", "typeValue": "stdio" },
+      "http": { "typeField": "type", "typeValue": "http" }
+    },
+    "commandType": "string",
+    "envKey": "env",
+    "envVarStyle": "inline"
+  }
+}
