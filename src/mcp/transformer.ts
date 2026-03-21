@@ -11,6 +11,7 @@
 
 import type { AgentDefinition, MCPConfig } from "../schemas/agent-schema.js";
 import type { EnvRef, NormalizedMCPConfig, NormalizedServer } from "./types.js";
+import { warn } from "../utils/output.js";
 
 /** Result of transforming for an agent */
 export interface TransformResult {
@@ -31,7 +32,7 @@ export function transformForAgent(
   const servers: Record<string, Record<string, unknown>> = {};
 
   for (const [name, server] of Object.entries(config.servers)) {
-    servers[name] = transformServer(server, mcp);
+    servers[name] = transformServer(server, mcp, name, agentDef.name);
   }
 
   return {
@@ -44,7 +45,14 @@ export function transformForAgent(
 function transformServer(
   server: NormalizedServer,
   mcp: MCPConfig,
+  serverName: string,
+  agentName: string,
 ): Record<string, unknown> {
+  if (!mcp.transports[server.transport]) {
+    warn(
+      `Agent "${agentName}" does not define transport "${server.transport}" — using defaults for server "${serverName}"`,
+    );
+  }
   if (mcp.envVarStyle === "named") {
     return transformServerNamed(server, mcp);
   }

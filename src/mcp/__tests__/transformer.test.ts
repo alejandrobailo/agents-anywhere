@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { loadAgentById } from "../../core/schema-loader.js";
 import type { AgentDefinition } from "../../schemas/agent-schema.js";
 import { parseMCPConfigFromString } from "../parser.js";
@@ -725,5 +725,32 @@ describe("parseMCPConfigFromString", () => {
       },
     });
     expect(() => parseMCPConfigFromString(bad)).toThrow("$env");
+  });
+});
+
+describe("missing transport definition", () => {
+  it("warns when agent has no http transport defined", async () => {
+    const warnSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const agent = await loadAgentById("claude-code");
+    // Create a modified agent with no http transport
+    const modified: AgentDefinition = {
+      ...agent,
+      mcp: {
+        ...agent.mcp,
+        transports: { stdio: agent.mcp.transports.stdio },
+      },
+    };
+    const config: NormalizedMCPConfig = {
+      servers: {
+        api: { transport: "http", url: "https://example.com" },
+      },
+    };
+    const result = transformForAgent(config, modified);
+    expect(result.servers.api).toBeDefined();
+    expect(result.servers.api.url).toBe("https://example.com");
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("does not define transport"),
+    );
+    warnSpy.mockRestore();
   });
 });
