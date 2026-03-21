@@ -22,7 +22,8 @@
   "credentials": [],
   "instructions": {
     "filename": "rules",
-    "globalPath": "~/.aws/amazonq/rules"
+    "globalPath": "~/.aws/amazonq/rules",
+    "globalSupport": false
   },
   "mcp": {
     "configPath": "mcp.json",

@@ -22,7 +22,8 @@
   "credentials": [],
   "instructions": {
     "filename": "copilot-instructions.md",
-    "globalPath": "~/.copilot/copilot-instructions.md"
+    "globalPath": "~/.copilot/copilot-instructions.md",
+    "globalSupport": true
   },
   "mcp": {
     "configPath": "mcp-config.json",

@@ -23,7 +23,8 @@
   "credentials": [],
   "instructions": {
     "filename": "AGENTS.md",
-    "globalPath": "~/.codex/AGENTS.md"
+    "globalPath": "~/.codex/AGENTS.md",
+    "globalSupport": true
   },
   "mcp": {
     "configPath": "config.toml",

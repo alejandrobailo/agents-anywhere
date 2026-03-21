@@ -23,7 +23,8 @@
   "credentials": [],
   "instructions": {
     "filename": "AGENTS.md",
-    "globalPath": "~/.config/opencode/AGENTS.md"
+    "globalPath": "~/.config/opencode/AGENTS.md",
+    "globalSupport": true
   },
   "mcp": {
     "configPath": "opencode.json",

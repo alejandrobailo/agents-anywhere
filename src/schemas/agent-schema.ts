@@ -21,6 +21,8 @@ export interface DetectRule {
 export interface InstructionsConfig {
   filename: string;
   globalPath: string;
+  /** Whether the agent supports global (user-level) instructions that can be symlinked */
+  globalSupport: boolean;
 }
 
 /** Transport definition for MCP */

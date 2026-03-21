@@ -22,7 +22,8 @@
   "credentials": [],
   "instructions": {
     "filename": "steering",
-    "globalPath": "~/.kiro/steering"
+    "globalPath": "~/.kiro/steering",
+    "globalSupport": true
   },
   "mcp": {
     "configPath": "settings/mcp.json",

@@ -22,7 +22,8 @@
   "credentials": [],
   "instructions": {
     "filename": "GEMINI.md",
-    "globalPath": "~/.gemini/GEMINI.md"
+    "globalPath": "~/.gemini/GEMINI.md",
+    "globalSupport": true
   },
   "mcp": {
     "configPath": "mcp_config.json",

@@ -89,11 +89,16 @@ export const agentDefinitionSchema = {
     },
     InstructionsConfig: {
       type: "object",
-      required: ["filename", "globalPath"],
+      required: ["filename", "globalPath", "globalSupport"],
       additionalProperties: false,
       properties: {
         filename: { type: "string" },
         globalPath: { type: "string" },
+        globalSupport: {
+          type: "boolean",
+          description:
+            "Whether this agent supports global (user-level) instructions",
+        },
       },
     },
     TransportConfig: {

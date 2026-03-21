@@ -119,6 +119,7 @@ describe("schema-loader", () => {
         instructions: {
           filename: "AGENTS.md",
           globalPath: "~/.test-agent/AGENTS.md",
+          globalSupport: true,
         },
         mcp: {
           configPath: "mcp.json",

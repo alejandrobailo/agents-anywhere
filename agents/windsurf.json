@@ -25,7 +25,8 @@
   "credentials": [],
   "instructions": {
     "filename": "rules",
-    "globalPath": "~/.codeium/windsurf/rules"
+    "globalPath": "~/.codeium/windsurf/rules",
+    "globalSupport": false
   },
   "mcp": {
     "configPath": "mcp_config.json",

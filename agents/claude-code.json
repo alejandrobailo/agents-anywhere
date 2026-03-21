@@ -41,7 +41,8 @@
   ],
   "instructions": {
     "filename": "CLAUDE.md",
-    "globalPath": "~/.claude/CLAUDE.md"
+    "globalPath": "~/.claude/CLAUDE.md",
+    "globalSupport": true
   },
   "mcp": {
     "configPath": ".mcp.json",
