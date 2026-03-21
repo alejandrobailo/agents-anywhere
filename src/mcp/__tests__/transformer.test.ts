@@ -565,6 +565,43 @@ describe("Amazon Q Developer", () => {
   });
 });
 
+describe("Kiro", () => {
+  it("transforms stdio server correctly", async () => {
+    const agent = await loadAgentById("kiro");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.rootKey).toBe("mcpServers");
+    expect(result.format).toBe("json");
+    expect(result.servers.github).toEqual({
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-github"],
+      env: {
+        GITHUB_TOKEN: "${GITHUB_TOKEN}",
+      },
+    });
+  });
+
+  it("transforms http server correctly", async () => {
+    const agent = await loadAgentById("kiro");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.servers.sentry).toEqual({
+      type: "http",
+      url: "https://mcp.sentry.dev/sse",
+      headers: {
+        Authorization: "Bearer ${SENTRY_TOKEN}",
+      },
+    });
+  });
+
+  it("snapshot: full Kiro output", async () => {
+    const agent = await loadAgentById("kiro");
+    const result = transformForAgent(sampleConfig, agent!);
+    expect(result).toMatchSnapshot();
+  });
+});
+
 describe("mergeJSON routing", () => {
   it("agents with writeMode merge use mergeJSON in mcp-sync", async () => {
     const opencode = await loadAgentById("opencode");
