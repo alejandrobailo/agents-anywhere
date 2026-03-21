@@ -1,0 +1,39 @@
+{
+  "id": "amazon-q",
+  "name": "Amazon Q Developer",
+  "configDir": {
+    "darwin": "~/.aws/amazonq",
+    "linux": "~/.aws/amazonq",
+    "win32": "%APPDATA%/aws/amazonq"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.aws/amazonq"
+  },
+  "portable": [],
+  "ignore": [
+    "cache/**",
+    "sessions/**",
+    "*.backup.*"
+  ],
+  "credentials": [],
+  "instructions": {
+    "filename": "rules",
+    "globalPath": "~/.aws/amazonq/rules"
+  },
+  "mcp": {
+    "configPath": "mcp.json",
+    "scope": "user",
+    "rootKey": "mcpServers",
+    "format": "json",
+    "writeMode": "standalone",
+    "envSyntax": "${VAR}",
+    "transports": {
+      "stdio": { "typeField": "type", "typeValue": "stdio" },
+      "http": { "typeField": "type", "typeValue": "http" }
+    },
+    "commandType": "string",
+    "envKey": "env",
+    "envVarStyle": "inline"
+  }
+}
