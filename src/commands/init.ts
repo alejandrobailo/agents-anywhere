@@ -20,7 +20,7 @@ import { parseMCPConfig } from "../mcp/parser.js";
 import { transformForAgent } from "../mcp/transformer.js";
 import { writeJSON, mergeJSON, writeTOML } from "../mcp/writer.js";
 import { expandPath, getPlatformPath } from "../utils/paths.js";
-import { heading, success, error, info, warn, dim } from "../utils/output.js";
+import { heading, success, error, info, warn, dim, debug } from "../utils/output.js";
 
 const DEFAULT_REPO_DIR = path.join(os.homedir(), "agents-anywhere-config");
 
@@ -404,7 +404,8 @@ function syncMCPToAllAgents(
   let config;
   try {
     config = parseMCPConfig(mcpPath);
-  } catch {
+  } catch (err) {
+    debug(`Failed to parse MCP config at ${mcpPath}: ${(err as Error).message}`);
     return;
   }
 

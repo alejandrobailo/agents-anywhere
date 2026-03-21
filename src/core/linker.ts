@@ -11,6 +11,7 @@ import {
 import path from "node:path";
 import type { AgentDefinition } from "../schemas/agent-schema.js";
 import { expandPath, getPlatformPath } from "../utils/paths.js";
+import { debug } from "../utils/output.js";
 
 /** Status of a single portable file/dir */
 export type LinkStatus = "linked" | "unlinked" | "diverged" | "missing";
@@ -215,7 +216,8 @@ export function lstatExists(p: string): boolean {
   try {
     lstatSync(p);
     return true;
-  } catch {
+  } catch (err) {
+    debug(`lstat failed for ${p}: ${(err as Error).message}`);
     return false;
   }
 }
@@ -229,7 +231,8 @@ function isSymlinkTo(linkPath: string, expectedTarget: string): boolean {
     if (!stat.isSymbolicLink()) return false;
     const target = readlinkSync(linkPath);
     return path.resolve(path.dirname(linkPath), target) === path.resolve(expectedTarget);
-  } catch {
+  } catch (err) {
+    debug(`isSymlinkTo check failed for ${linkPath}: ${(err as Error).message}`);
     return false;
   }
 }
@@ -247,7 +250,8 @@ function findMostRecentBackup(dir: string, item: string): string | undefined {
       .sort()
       .reverse();
     return backups[0];
-  } catch {
+  } catch (err) {
+    debug(`findMostRecentBackup readdir failed for ${dir}/${item}: ${(err as Error).message}`);
     return undefined;
   }
 }

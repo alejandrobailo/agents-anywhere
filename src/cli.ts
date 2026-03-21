@@ -18,6 +18,7 @@ import { disableCommand } from "./commands/disable.js";
 import { mcpRemoveCommand } from "./commands/mcp-remove.js";
 import { pushCommand } from "./commands/push.js";
 import { pullCommand } from "./commands/pull.js";
+import { setVerbose } from "./utils/output.js";
 
 const program = new Command();
 
@@ -26,7 +27,14 @@ program
   .description(
     "Manage your AI coding agent configs in one place. One MCP config for every tool.",
   )
-  .version(version);
+  .version(version)
+  .option("--verbose", "Show debug output for troubleshooting");
+
+program.hook("preAction", () => {
+  if (program.opts<{ verbose?: boolean }>().verbose) {
+    setVerbose(true);
+  }
+});
 
 program
   .command("init")
@@ -109,8 +117,10 @@ program
 program
   .command("push")
   .description("Stage, commit, and push config changes to remote")
-  .action(async () => {
-    await pushCommand();
+  .option("--dry-run", "Show what would be committed without making changes")
+  .option("-m, --message <msg>", "Custom commit message")
+  .action(async (opts: { dryRun?: boolean; message?: string }) => {
+    await pushCommand(opts);
   });
 
 program

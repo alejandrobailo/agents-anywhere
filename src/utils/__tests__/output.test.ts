@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { green, red, dim, bold, yellow, cyan, useColor } from "../output.js";
+import { green, red, dim, bold, yellow, cyan, useColor, debug, setVerbose, isVerbose } from "../output.js";
 
 describe("output — color support", () => {
   const originalEnv = { ...process.env };
@@ -71,5 +71,44 @@ describe("output — color support", () => {
     process.env.NO_COLOR = "";
     process.env.FORCE_COLOR = "1";
     expect(useColor()).toBe(false);
+  });
+});
+
+describe("output — verbose / debug", () => {
+  afterEach(() => {
+    setVerbose(false);
+    delete process.env.AGENTS_ANYWHERE_VERBOSE;
+    vi.restoreAllMocks();
+  });
+
+  it("isVerbose() returns false by default", () => {
+    expect(isVerbose()).toBe(false);
+  });
+
+  it("debug() is silent when verbose is not set", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    debug("test message");
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("debug() prints to stderr when setVerbose(true)", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    setVerbose(true);
+    debug("test message");
+    expect(spy).toHaveBeenCalledOnce();
+    expect(spy.mock.calls[0][0]).toContain("test message");
+  });
+
+  it("debug() prints when AGENTS_ANYWHERE_VERBOSE env var is set", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    process.env.AGENTS_ANYWHERE_VERBOSE = "1";
+    debug("env test");
+    expect(spy).toHaveBeenCalledOnce();
+    expect(spy.mock.calls[0][0]).toContain("env test");
+  });
+
+  it("isVerbose() returns true after setVerbose(true)", () => {
+    setVerbose(true);
+    expect(isVerbose()).toBe(true);
   });
 });

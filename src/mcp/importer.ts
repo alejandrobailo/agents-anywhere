@@ -8,6 +8,7 @@ import * as fs from "node:fs";
 import path from "node:path";
 import * as TOML from "smol-toml";
 import type { AgentDefinition, MCPConfig } from "../schemas/agent-schema.js";
+import { debug } from "../utils/output.js";
 import type { NormalizedMCPConfig, NormalizedServer, EnvRef } from "./types.js";
 import { expandPath, getPlatformPath } from "../utils/paths.js";
 
@@ -136,7 +137,8 @@ function readNativeConfig(
     if (!servers || typeof servers !== "object") return null;
 
     return servers as Record<string, unknown>;
-  } catch {
+  } catch (err) {
+    debug(`Failed to parse native config ${filePath}: ${(err as Error).message}`);
     return null;
   }
 }

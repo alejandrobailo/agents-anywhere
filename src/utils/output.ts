@@ -13,6 +13,16 @@ const YELLOW = "\x1b[33m";
 const BLUE = "\x1b[34m";
 const CYAN = "\x1b[36m";
 
+let _verbose = false;
+
+export function setVerbose(v: boolean): void {
+  _verbose = v;
+}
+
+export function isVerbose(): boolean {
+  return _verbose || process.env.AGENTS_ANYWHERE_VERBOSE !== undefined;
+}
+
 /** Check if color output should be used */
 export function useColor(): boolean {
   if (process.env.NO_COLOR !== undefined) return false;
@@ -41,6 +51,12 @@ export function warn(msg: string): void {
 
 export function error(msg: string): void {
   const prefix = useColor() ? `${RED}✗${RESET}` : "✗";
+  console.error(`${prefix} ${msg}`);
+}
+
+export function debug(msg: string): void {
+  if (!isVerbose()) return;
+  const prefix = useColor() ? `${DIM}[debug]${RESET}` : "[debug]";
   console.error(`${prefix} ${msg}`);
 }
 

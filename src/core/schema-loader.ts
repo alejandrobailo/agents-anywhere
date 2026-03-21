@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import type { AgentDefinition } from "../schemas/agent-schema.js";
 import { agentDefinitionSchema } from "../schemas/agent-definition-schema-data.js";
+import { debug } from "../utils/output.js";
 
 /** A single validation error with a JSON path and message */
 export interface ValidationError {
@@ -48,8 +49,8 @@ export function getAgentsDir(): string {
     try {
       readdirSync(candidate);
       return candidate;
-    } catch {
-      // try next
+    } catch (err) {
+      debug(`Agents dir candidate ${candidate} not accessible: ${(err as Error).message}`);
     }
   }
 
