@@ -9,41 +9,39 @@ You've spent hours perfecting your `CLAUDE.md`, building custom skills, tuning y
 ## Quick Start
 
 ```bash
-# New setup
-npx agents-anywhere init        # detects your agents, creates config repo
-npx agents-anywhere link        # symlinks your configs to each agent
+# New setup — one command does everything
+npx agents-anywhere init
 
 # New device (already have a config repo)
 npx agents-anywhere init --from https://github.com/you/agents-anywhere-config.git
-npx agents-anywhere link
 ```
 
-That's it. Your skills, instructions, settings, and commands are live.
+`init` detects your installed agents, picks a primary agent, copies your configs, imports MCP servers, creates symlinks, and optionally pushes to a private GitHub repo. One command, fully configured.
 
 ## What gets synced
 
 ```
 agents-anywhere-config/           # this is your git repo
 +-- claude-code/
-|   +-- CLAUDE.md                 # → ~/.claude/CLAUDE.md
+|   +-- CLAUDE.md                 # → ~/.claude/CLAUDE.md (source of truth)
 |   +-- settings.json             # → ~/.claude/settings.json
 |   +-- skills/                   # → ~/.claude/skills/
 |   +-- commands/                 # → ~/.claude/commands/
 +-- codex/
-|   +-- AGENTS.md                 # → ~/.codex/AGENTS.md
+|   +-- AGENTS.md                 # → symlink to claude-code/CLAUDE.md
 |   +-- config.toml               # → ~/.codex/config.toml
 |   +-- skills/                   # → ~/.codex/skills/
 +-- opencode/
-|   +-- AGENTS.md                 # → ~/.config/opencode/AGENTS.md
+|   +-- AGENTS.md                 # → symlink to claude-code/CLAUDE.md
 |   +-- skills/                   # → ~/.config/opencode/skills/
 +-- github-copilot/
-|   +-- copilot-instructions.md   # → ~/.copilot/copilot-instructions.md
+|   +-- copilot-instructions.md   # → symlink to claude-code/CLAUDE.md
 |   +-- skills/                   # → ~/.copilot/skills/
 +-- mcp.json                      # normalized MCP config (see below)
 +-- agents-anywhere.json          # manifest
 ```
 
-Edit a skill in your repo, it's instantly live in the agent. Push to git, pull on another machine, run `agents-anywhere link` — done.
+Your primary agent's instructions (e.g., `CLAUDE.md`) become the source of truth. Other agents get symlinks with the correct filename for each tool. Edit once, synced everywhere.
 
 ## Supported Agents
 
@@ -62,22 +60,26 @@ Edit a skill in your repo, it's instantly live in the agent. Push to git, pull o
 
 **Planned:** Cline, Roo Code, Kilo Code, Amp, Augment, Zed, Trae, Continue.dev.
 
-## Device Sync
+> Cursor, Windsurf, and Amazon Q only support project-level rules — global instructions are not synced for these agents.
 
-It's just git. No cloud, no accounts.
+## Device Sync
 
 ```bash
 # Machine A — you changed your CLAUDE.md and added a skill
-cd ~/agents-anywhere-config && git add -A && git commit -m "update instructions" && git push
+agents-anywhere push
 
 # Machine B — get the changes
-cd ~/agents-anywhere-config && git pull
+agents-anywhere pull
 # post-merge hook auto-runs: agents-anywhere link && agents-anywhere mcp sync
 ```
+
+No cloud, no accounts — just git.
 
 ## MCP Normalization
 
 Every agent has a different MCP config format. agents-anywhere lets you write **one `mcp.json`** and generates the native format for each agent.
+
+`init` auto-imports your existing MCP servers from all installed agents and merges them into a single `mcp.json`. Duplicates are resolved by keeping the richer config.
 
 ```json
 {
@@ -107,8 +109,10 @@ Each agent gets its native format — correct root keys, env var syntax, transpo
 
 | Command | Description |
 |---|---|
-| `agents-anywhere init [dir]` | Detect agents, create config repo |
-| `agents-anywhere init --from <url>` | Clone an existing config repo |
+| `agents-anywhere init [dir]` | Detect agents, copy configs, import MCP, link — full setup |
+| `agents-anywhere init --from <url>` | Clone an existing config repo and link |
+| `agents-anywhere push` | Stage, commit, and push config changes to remote |
+| `agents-anywhere pull` | Pull config changes (post-merge hook re-links) |
 | `agents-anywhere link [agent]` | Symlink configs to agent directories |
 | `agents-anywhere unlink [agent]` | Remove symlinks, restore backups |
 | `agents-anywhere status` | Show link status per agent and file |
@@ -133,6 +137,7 @@ Each agent is defined by a JSON file — no TypeScript code needed. The definiti
 - What files are portable (`portable`: instructions, skills, settings)
 - What to ignore (`ignore`: sessions, cache, credentials)
 - How MCP configs are formatted (`mcp`: root key, env syntax, transport types)
+- Whether the agent supports global instructions (`instructions.globalSupport`)
 
 ```bash
 # Add support for a new agent = add one JSON file
