@@ -1,25 +1,25 @@
-# agentsync
+# agents-anywhere
 
 > Manage your AI coding agent configs in one place. One MCP config for every tool. Sync between devices with git.
 
 Developers using multiple AI coding agents (Claude Code, Codex CLI, Cursor, Gemini CLI, etc.) maintain separate configs in separate locations with separate formats. The worst offender: **MCP server configuration** — different root keys, different env var syntaxes, different transport naming. Adding one MCP server means editing N files in N formats.
 
-**agentsync** fixes this. Write one canonical `mcp.json`, run `agentsync mcp sync`, and every agent gets its native config generated automatically.
+**agents-anywhere** fixes this. Write one canonical `mcp.json`, run `agents-anywhere mcp sync`, and every agent gets its native config generated automatically.
 
 ## Quick Start
 
 ```bash
-npx agentsync init
-npx agentsync link
-npx agentsync mcp sync
+npx agents-anywhere init
+npx agents-anywhere link
+npx agents-anywhere mcp sync
 ```
 
 Already have a config repo? Clone it on a new device:
 
 ```bash
-npx agentsync init --from https://github.com/you/agentsync-config.git
-npx agentsync link
-npx agentsync mcp sync
+npx agents-anywhere init --from https://github.com/you/agents-anywhere-config.git
+npx agents-anywhere link
+npx agents-anywhere mcp sync
 ```
 
 ## Features
@@ -27,7 +27,7 @@ npx agentsync mcp sync
 ### Agent Detection & Linking
 
 ```bash
-$ agentsync init
+$ agents-anywhere init
 
 Detected 10 AI coding agents:
   Claude Code    ~/.claude
@@ -41,10 +41,10 @@ Detected 10 AI coding agents:
   Kiro           ~/.kiro
   Antigravity    ~/.gemini/antigravity
 
-Created config repo at ~/agentsync-config
-Run `agentsync link` to connect your agents.
+Created config repo at ~/agents-anywhere-config
+Run `agents-anywhere link` to connect your agents.
 
-$ agentsync link
+$ agents-anywhere link
 
 [OK] Claude Code    — settings.json, CLAUDE.md, commands/, skills/ linked
 [OK] Codex CLI     — config.toml, AGENTS.md, skills/ linked
@@ -91,7 +91,7 @@ One canonical config generates tool-specific configs automatically.
 }
 ```
 
-**agentsync generates the right format for each agent:**
+**agents-anywhere generates the right format for each agent:**
 
 | Agent | Output | Root key | Env syntax |
 |---|---|---|---|
@@ -107,7 +107,7 @@ One canonical config generates tool-specific configs automatically.
 | Antigravity | `~/.gemini/antigravity/mcp_config.json` | `mcpServers` | `${VAR}` |
 
 ```bash
-$ agentsync mcp sync
+$ agents-anywhere mcp sync
 
 [OK] Claude Code — 2 servers written to ~/.claude/.mcp.json
 [OK] Codex CLI   — 2 servers merged into ~/.codex/config.toml
@@ -127,14 +127,14 @@ Add MCP servers from scripts or CI without interactive prompts:
 
 ```bash
 # Add a stdio server
-agentsync mcp add github \
+agents-anywhere mcp add github \
   --transport stdio \
   --command npx \
   --args "-y,@modelcontextprotocol/server-github" \
   --env GITHUB_TOKEN=GITHUB_TOKEN
 
 # Add an HTTP server
-agentsync mcp add sentry \
+agents-anywhere mcp add sentry \
   --transport http \
   --url https://mcp.sentry.dev/sse
 ```
@@ -145,11 +145,11 @@ Not a feature we build — it's just git.
 
 ```bash
 # Device A
-cd ~/agentsync-config && git add -A && git commit -m "add sentry MCP" && git push
+cd ~/agents-anywhere-config && git add -A && git commit -m "add sentry MCP" && git push
 
 # Device B
-cd ~/agentsync-config && git pull
-# Post-merge hook runs `agentsync link && agentsync mcp sync` automatically
+cd ~/agents-anywhere-config && git pull
+# Post-merge hook runs `agents-anywhere link && agents-anywhere mcp sync` automatically
 ```
 
 The `init` command sets up a git `post-merge` hook so `git pull` automatically re-links and regenerates MCP configs.
@@ -158,19 +158,19 @@ The `init` command sets up a git `post-merge` hook so `git pull` automatically r
 
 | Command | Description |
 |---|---|
-| `agentsync init [dir]` | Detect agents, create config repo, scaffold structure |
-| `agentsync init --from <url>` | Clone an existing config repo from a git URL |
-| `agentsync link [agent]` | Create symlinks for all or a specific agent |
-| `agentsync unlink [agent]` | Remove symlinks, restore backups |
-| `agentsync status` | Show link status for each agent and file |
-| `agentsync agents` | List all known agents with install status |
-| `agentsync mcp sync` | Generate per-agent MCP configs from `mcp.json` |
-| `agentsync mcp add <name>` | Add an MCP server to `mcp.json` (interactive or with flags) |
-| `agentsync mcp list` | Show all configured MCP servers |
-| `agentsync mcp diff` | Preview what `mcp sync` would change |
-| `agentsync validate` | Validate all bundled agent definition JSON files against the schema |
-| `agentsync export` | Generate a standalone install script (pure bash, no agentsync needed) |
-| `agentsync doctor` | Diagnose config health: broken symlinks, credentials in repo, stale configs |
+| `agents-anywhere init [dir]` | Detect agents, create config repo, scaffold structure |
+| `agents-anywhere init --from <url>` | Clone an existing config repo from a git URL |
+| `agents-anywhere link [agent]` | Create symlinks for all or a specific agent |
+| `agents-anywhere unlink [agent]` | Remove symlinks, restore backups |
+| `agents-anywhere status` | Show link status for each agent and file |
+| `agents-anywhere agents` | List all known agents with install status |
+| `agents-anywhere mcp sync` | Generate per-agent MCP configs from `mcp.json` |
+| `agents-anywhere mcp add <name>` | Add an MCP server to `mcp.json` (interactive or with flags) |
+| `agents-anywhere mcp list` | Show all configured MCP servers |
+| `agents-anywhere mcp diff` | Preview what `mcp sync` would change |
+| `agents-anywhere validate` | Validate all bundled agent definition JSON files against the schema |
+| `agents-anywhere export` | Generate a standalone install script (pure bash, no agents-anywhere needed) |
+| `agents-anywhere doctor` | Diagnose config health: broken symlinks, credentials in repo, stale configs |
 
 The `link`, `unlink`, and `mcp sync` commands support a `--dry-run` flag to preview changes without writing to disk.
 
@@ -215,8 +215,8 @@ mcp.json (normalized)
 ### Repo structure (what you manage)
 
 ```
-agentsync-config/
-+-- agentsync.json          # Manifest: which agents, repo metadata
+agents-anywhere-config/
++-- agents-anywhere.json          # Manifest: which agents, repo metadata
 +-- mcp.json                # Normalized MCP config (the one you edit)
 +-- claude-code/
 |   +-- settings.json       # → ~/.claude/settings.json

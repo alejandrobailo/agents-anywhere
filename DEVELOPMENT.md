@@ -31,22 +31,22 @@ src/
 │   ├── transformer.ts         # Transform normalized config → per-agent format
 │   └── writer.ts              # Write transformed configs (JSON, TOML, merge strategies)
 ├── commands/
-│   ├── init.ts                # `agentsync init` — scaffold config repo
-│   ├── link.ts                # `agentsync link` — create symlinks
-│   ├── unlink.ts              # `agentsync unlink` — remove symlinks, restore backups
-│   ├── status.ts              # `agentsync status` — show link status
-│   ├── agents.ts              # `agentsync agents` — list known agents
-│   ├── mcp-sync.ts            # `agentsync mcp sync` — generate per-agent MCP configs
-│   ├── mcp-add.ts             # `agentsync mcp add` — interactive server addition
-│   ├── mcp-list.ts            # `agentsync mcp list` — list configured servers
-│   ├── mcp-diff.ts            # `agentsync mcp diff` — preview sync changes
-│   ├── doctor.ts              # `agentsync doctor` — config health diagnostics
-│   ├── validate.ts            # `agentsync validate` — validate agent definition schemas
-│   └── export.ts              # `agentsync export` — generate standalone install script
+│   ├── init.ts                # `agents-anywhere init` — scaffold config repo
+│   ├── link.ts                # `agents-anywhere link` — create symlinks
+│   ├── unlink.ts              # `agents-anywhere unlink` — remove symlinks, restore backups
+│   ├── status.ts              # `agents-anywhere status` — show link status
+│   ├── agents.ts              # `agents-anywhere agents` — list known agents
+│   ├── mcp-sync.ts            # `agents-anywhere mcp sync` — generate per-agent MCP configs
+│   ├── mcp-add.ts             # `agents-anywhere mcp add` — interactive server addition
+│   ├── mcp-list.ts            # `agents-anywhere mcp list` — list configured servers
+│   ├── mcp-diff.ts            # `agents-anywhere mcp diff` — preview sync changes
+│   ├── doctor.ts              # `agents-anywhere doctor` — config health diagnostics
+│   ├── validate.ts            # `agents-anywhere validate` — validate agent definition schemas
+│   └── export.ts              # `agents-anywhere export` — generate standalone install script
 ├── utils/
 │   ├── output.ts              # ANSI-colored CLI output helpers
 │   ├── paths.ts               # Cross-platform path expansion (~, %APPDATA%)
-│   └── manifest.ts            # Load agentsync.json manifest
+│   └── manifest.ts            # Load agents-anywhere.json manifest
 └── __tests__/
     └── e2e.test.ts            # Full init → link → mcp sync → unlink integration tests
 
@@ -224,7 +224,7 @@ tsup builds both CJS and ESM bundles:
 npm run build    # tsup + copies agents/ to dist/agents/
 ```
 
-- CJS entry: `dist/cli.js` (used by the `agentsync` bin command)
+- CJS entry: `dist/cli.js` (used by the `agents-anywhere` bin command)
 - ESM entry: `dist/index.mjs` (public API — currently only exports `version`)
 - Agent definitions are copied to `dist/agents/` and located at runtime via `__dirname`
 - The JSON Schema for agent definition validation is inlined as a TypeScript constant in `src/schemas/agent-definition-schema-data.ts` (not read from disk at runtime) for bundle compatibility
@@ -250,7 +250,7 @@ describe("My Agent", () => {
 ```
 
 4. Run `npx vitest run --update` to generate the initial snapshot.
-5. Test manually: `npm run build && npx agentsync agents` should show the new agent.
+5. Test manually: `npm run build && npx agents-anywhere agents` should show the new agent.
 
 ## Common Patterns
 
@@ -258,7 +258,7 @@ describe("My Agent", () => {
 
 **Path expansion** — Use `expandPath(getPlatformPath(def.configDir))` to get the resolved config directory for the current platform.
 
-**Manifest loading** — `loadManifest()` searches `process.cwd()` then `~/agentsync-config` for `agentsync.json`. Returns `null` with an error message if not found. The `repoDir` is always derived from the manifest file's location (not from the JSON content) to prevent path traversal.
+**Manifest loading** — `loadManifest()` searches `process.cwd()` then `~/agents-anywhere-config` for `agents-anywhere.json`. Returns `null` with an error message if not found. The `repoDir` is always derived from the manifest file's location (not from the JSON content) to prevent path traversal.
 
 **Writer selection** — `mcp-sync.ts` routes to the correct writer based on `format` and `writeMode`:
 
