@@ -25,7 +25,7 @@ const program = new Command();
 program
   .name("agents-anywhere")
   .description(
-    "Manage your AI coding agent configs in one place. One MCP config for every tool.",
+    "Your AI agent configs, skills, and instructions — on every device.",
   )
   .version(version)
   .option("--verbose", "Show debug output for troubleshooting");
