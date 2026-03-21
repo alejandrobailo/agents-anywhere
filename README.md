@@ -46,16 +46,16 @@ Run `agentsync link` to connect your agents.
 
 $ agentsync link
 
-[OK] Claude Code — settings.json, CLAUDE.md, commands/, skills/ linked
-[OK] Codex CLI   — config.toml, AGENTS.md, skills/ linked
-[OK] OpenCode    — opencode.json, AGENTS.md linked
-[OK] Gemini CLI  — settings.json, GEMINI.md linked
-[OK] Cursor      — rules/ linked
-[OK] Windsurf    — mcp_config.json, memories/, rules/ linked
-[OK] GitHub Copilot — mcp-config.json linked
-[OK] Amazon Q    — mcp.json linked
-[OK] Kiro        — settings/mcp.json linked
-[OK] Antigravity — mcp_config.json linked
+[OK] Claude Code    — settings.json, CLAUDE.md, commands/, skills/ linked
+[OK] Codex CLI     — config.toml, AGENTS.md, skills/ linked
+[OK] OpenCode      — opencode.json, AGENTS.md, skills/ linked
+[OK] Gemini CLI    — settings.json, GEMINI.md, skills/, commands/ linked
+[OK] Cursor        — rules/, skills/ linked
+[OK] Windsurf      — mcp_config.json, memories/, rules/, skills/ linked
+[OK] GitHub Copilot — copilot-instructions.md, skills/ linked
+[OK] Amazon Q      — rules/, skills/ linked
+[OK] Kiro          — steering/, skills/ linked
+[OK] Antigravity   — GEMINI.md, skills/ linked
 ```
 
 - Scans for installed agents by checking known config directories
@@ -176,18 +176,18 @@ The `link`, `unlink`, and `mcp sync` commands support a `--dry-run` flag to prev
 
 ## Supported Agents
 
-| Agent | Config dir | Config format | MCP config | Instructions file |
-|---|---|---|---|---|
-| Claude Code | `~/.claude` | JSON | `.mcp.json` | `CLAUDE.md` |
-| Codex CLI | `~/.codex` | TOML | `config.toml` | `AGENTS.md` |
-| OpenCode | `~/.config/opencode` | JSON | `opencode.json` (merged) | `AGENTS.md` |
-| Gemini CLI | `~/.gemini` | JSON | `settings.json` (merged) | `GEMINI.md` |
-| Cursor | `~/.cursor` | JSON | `mcp.json` | `rules/**` |
-| Windsurf | `~/.codeium/windsurf` | JSON | `mcp_config.json` | `rules/**` |
-| GitHub Copilot | `~/.copilot` | JSON | `mcp-config.json` | `.github/copilot-instructions.md` |
-| Amazon Q | `~/.aws/amazonq` | JSON | `mcp.json` | `.amazonq/rules/` |
-| Kiro | `~/.kiro` | JSON | `settings/mcp.json` | `.kiro/steering/` |
-| Antigravity | `~/.gemini/antigravity` | JSON | `mcp_config.json` | `GEMINI.md` |
+| Agent | Config dir | MCP config | Instructions | Skills | Portable |
+|---|---|---|---|---|---|
+| Claude Code | `~/.claude` | `.mcp.json` | `CLAUDE.md` | `skills/` | settings, commands, skills |
+| Codex CLI | `~/.codex` | `config.toml` | `AGENTS.md` | `skills/` | config, instructions, skills |
+| OpenCode | `~/.config/opencode` | `opencode.json` | `AGENTS.md` | `skills/` | config, instructions, skills |
+| Gemini CLI | `~/.gemini` | `settings.json` | `GEMINI.md` | `skills/` | settings, instructions, skills, commands |
+| Cursor | `~/.cursor` | `mcp.json` | `rules/` | `skills/` | rules, skills |
+| Windsurf | `~/.codeium/windsurf` | `mcp_config.json` | `rules/` | `skills/` | config, memories, rules, skills |
+| GitHub Copilot | `~/.copilot` | `mcp-config.json` | `copilot-instructions.md` | `skills/` | instructions, skills |
+| Amazon Q | `~/.aws/amazonq` | `mcp.json` | `rules/` | `skills/` | rules, skills |
+| Kiro | `~/.kiro` | `settings/mcp.json` | `steering/` | `skills/` | steering, skills |
+| Antigravity | `~/.gemini/antigravity` | `mcp_config.json` | `GEMINI.md` | `skills/` | instructions, skills |
 
 ### Planned
 
@@ -219,12 +219,21 @@ agentsync-config/
 +-- agentsync.json          # Manifest: which agents, repo metadata
 +-- mcp.json                # Normalized MCP config (the one you edit)
 +-- claude-code/
-|   +-- settings.json       # Symlinked to ~/.claude/settings.json
-|   +-- CLAUDE.md           # Symlinked to ~/.claude/CLAUDE.md
-|   +-- commands/           # Symlinked to ~/.claude/commands/
+|   +-- settings.json       # → ~/.claude/settings.json
+|   +-- CLAUDE.md           # → ~/.claude/CLAUDE.md
+|   +-- commands/           # → ~/.claude/commands/
+|   +-- skills/             # → ~/.claude/skills/
 +-- codex/
-|   +-- config.toml         # Symlinked to ~/.codex/config.toml
-|   +-- AGENTS.md           # Symlinked to ~/.codex/AGENTS.md
+|   +-- config.toml         # → ~/.codex/config.toml
+|   +-- AGENTS.md           # → ~/.codex/AGENTS.md
+|   +-- skills/             # → ~/.codex/skills/
++-- opencode/
+|   +-- opencode.json       # → ~/.config/opencode/opencode.json
+|   +-- AGENTS.md           # → ~/.config/opencode/AGENTS.md
+|   +-- skills/             # → ~/.config/opencode/skills/
++-- github-copilot/
+|   +-- copilot-instructions.md  # → ~/.copilot/copilot-instructions.md
+|   +-- skills/             # → ~/.copilot/skills/
 +-- .gitignore
 ```
 
