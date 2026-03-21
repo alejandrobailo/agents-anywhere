@@ -52,6 +52,33 @@ exports[`Gemini CLI > snapshot: full Gemini CLI output 1`] = `
 }
 `;
 
+exports[`GitHub Copilot > snapshot: full GitHub Copilot output 1`] = `
+{
+  "format": "json",
+  "rootKey": "mcpServers",
+  "servers": {
+    "github": {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github",
+      ],
+      "command": "npx",
+      "env": {
+        "GITHUB_TOKEN": "\${GITHUB_TOKEN}",
+      },
+      "type": "local",
+    },
+    "sentry": {
+      "headers": {
+        "Authorization": "Bearer \${SENTRY_TOKEN}",
+      },
+      "type": "http",
+      "url": "https://mcp.sentry.dev/sse",
+    },
+  },
+}
+`;
+
 exports[`OpenCode > snapshot: full OpenCode output 1`] = `
 {
   "format": "json",

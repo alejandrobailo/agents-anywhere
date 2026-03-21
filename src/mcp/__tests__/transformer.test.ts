@@ -447,6 +447,65 @@ describe("Windsurf", () => {
   });
 });
 
+describe("GitHub Copilot", () => {
+  it("transforms stdio server with typeValue 'local' (Copilot's alias for stdio)", async () => {
+    const agent = await loadAgentById("github-copilot");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.rootKey).toBe("mcpServers");
+    expect(result.format).toBe("json");
+    expect(result.servers.github).toEqual({
+      type: "local",
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-github"],
+      env: {
+        GITHUB_TOKEN: "${GITHUB_TOKEN}",
+      },
+    });
+  });
+
+  it("transforms http server correctly", async () => {
+    const agent = await loadAgentById("github-copilot");
+    const result = transformForAgent(sampleConfig, agent!);
+
+    expect(result.servers.sentry).toEqual({
+      type: "http",
+      url: "https://mcp.sentry.dev/sse",
+      headers: {
+        Authorization: "Bearer ${SENTRY_TOKEN}",
+      },
+    });
+  });
+
+  it("env vars use ${VAR} syntax", async () => {
+    const agent = await loadAgentById("github-copilot");
+    const config: NormalizedMCPConfig = {
+      servers: {
+        multi: {
+          transport: "stdio",
+          command: "my-server",
+          env: {
+            API_KEY: { $env: "API_KEY" },
+            SECRET: { $env: "MY_SECRET" },
+          },
+        },
+      },
+    };
+    const result = transformForAgent(config, agent!);
+
+    expect(result.servers.multi.env).toEqual({
+      API_KEY: "${API_KEY}",
+      SECRET: "${MY_SECRET}",
+    });
+  });
+
+  it("snapshot: full GitHub Copilot output", async () => {
+    const agent = await loadAgentById("github-copilot");
+    const result = transformForAgent(sampleConfig, agent!);
+    expect(result).toMatchSnapshot();
+  });
+});
+
 describe("mergeJSON routing", () => {
   it("agents with writeMode merge use mergeJSON in mcp-sync", async () => {
     const opencode = await loadAgentById("opencode");
