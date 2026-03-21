@@ -11,7 +11,8 @@
     "path": "~/.cursor"
   },
   "portable": [
-    "rules/**"
+    "rules/**",
+    "skills/**"
   ],
   "ignore": [
     "sessions/**",

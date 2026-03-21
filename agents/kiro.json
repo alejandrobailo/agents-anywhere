@@ -10,7 +10,10 @@
     "type": "directory-exists",
     "path": "~/.kiro"
   },
-  "portable": [],
+  "portable": [
+    "steering/**",
+    "skills/**"
+  ],
   "ignore": [
     "cache/**",
     "sessions/**",

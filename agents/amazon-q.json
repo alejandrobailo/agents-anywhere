@@ -10,7 +10,10 @@
     "type": "directory-exists",
     "path": "~/.aws/amazonq"
   },
-  "portable": [],
+  "portable": [
+    "rules/**",
+    "skills/**"
+  ],
   "ignore": [
     "cache/**",
     "sessions/**",

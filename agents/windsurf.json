@@ -13,7 +13,8 @@
   "portable": [
     "mcp_config.json",
     "memories/**",
-    "rules/**"
+    "rules/**",
+    "skills/**"
   ],
   "ignore": [
     "cache/**",

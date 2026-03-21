@@ -10,7 +10,10 @@
     "type": "directory-exists",
     "path": "~/.gemini/antigravity"
   },
-  "portable": [],
+  "portable": [
+    "GEMINI.md",
+    "skills/**"
+  ],
   "ignore": [
     "cache/**",
     "sessions/**",

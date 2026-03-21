@@ -12,7 +12,9 @@
   },
   "portable": [
     "settings.json",
-    "GEMINI.md"
+    "GEMINI.md",
+    "skills/**",
+    "commands/**"
   ],
   "ignore": [
     "sessions/**",

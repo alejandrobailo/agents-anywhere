@@ -12,7 +12,8 @@
   },
   "portable": [
     "opencode.json",
-    "AGENTS.md"
+    "AGENTS.md",
+    "skills/**"
   ],
   "ignore": [
     "sessions/**",

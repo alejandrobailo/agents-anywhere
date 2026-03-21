@@ -10,7 +10,10 @@
     "type": "directory-exists",
     "path": "~/.copilot"
   },
-  "portable": [],
+  "portable": [
+    "copilot-instructions.md",
+    "skills/**"
+  ],
   "ignore": [
     "cache/**",
     "sessions/**",
