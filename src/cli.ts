@@ -17,7 +17,7 @@ import { exportCommand } from "./commands/export.js";
 const program = new Command();
 
 program
-  .name("agentsync")
+  .name("agents-anywhere")
   .description(
     "Manage your AI coding agent configs in one place. One MCP config for every tool.",
   )
@@ -28,8 +28,8 @@ program
   .description(
     "Detect installed agents, create config repo, and scaffold structure",
   )
-  .argument("[dir]", "Config repo directory (default: ~/agentsync-config)")
-  .option("--from <url>", "Clone an existing agentsync config repo from a git URL")
+  .argument("[dir]", "Config repo directory (default: ~/agents-anywhere-config)")
+  .option("--from <url>", "Clone an existing agents-anywhere config repo from a git URL")
   .action(async (dir?: string, opts?: { from?: string }) => {
     await initCommand(dir, { from: opts?.from });
   });
@@ -81,7 +81,7 @@ program
 program
   .command("export")
   .description(
-    "Generate a standalone install script (pure bash, no agentsync needed)",
+    "Generate a standalone install script (pure bash, no agents-anywhere needed)",
   )
   .action(async () => {
     await exportCommand();
