@@ -442,9 +442,18 @@ async function promptGitHubRepo(repoDir: string): Promise<void> {
       { stdio: "inherit", cwd: repoDir },
     );
     success(`Created and pushed to private GitHub repo: ${repoName}`);
-  } catch (err) {
-    warn(`Failed to create GitHub repo: ${(err as Error).message}`);
-    info("You can create it manually later with: gh repo create");
+  } catch {
+    // Repo may already exist on GitHub — try to connect and push instead
+    try {
+      const ghUser = execSync("gh api user -q .login", { encoding: "utf-8", cwd: repoDir }).trim();
+      const remoteUrl = `https://github.com/${ghUser}/${repoName}.git`;
+      execSync(`git remote add origin ${remoteUrl}`, { stdio: "inherit", cwd: repoDir });
+      execSync("git push -u origin main", { stdio: "inherit", cwd: repoDir });
+      success(`Connected to existing repo and pushed: ${ghUser}/${repoName}`);
+    } catch (err2) {
+      warn(`Failed to create or connect GitHub repo: ${(err2 as Error).message}`);
+      info("You can set it up manually: git remote add origin <url> && git push");
+    }
   }
 }
 
