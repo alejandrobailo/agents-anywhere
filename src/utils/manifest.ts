@@ -16,6 +16,7 @@ export interface ManifestAgent {
 export interface Manifest {
   version: string;
   repoDir: string;
+  primaryAgent?: string;
   agents: Record<string, ManifestAgent>;
 }
 

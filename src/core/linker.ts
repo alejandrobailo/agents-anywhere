@@ -211,7 +211,7 @@ export function getStatus(
 /**
  * Check if a path exists as a symlink (even if target is broken).
  */
-function lstatExists(p: string): boolean {
+export function lstatExists(p: string): boolean {
   try {
     lstatSync(p);
     return true;
