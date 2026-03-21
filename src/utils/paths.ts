@@ -1,5 +1,6 @@
 import path from "node:path";
 import os from "node:os";
+import { warn } from "./output.js";
 
 /**
  * Expand ~ to the user's home directory and resolve the path.
@@ -28,8 +29,12 @@ export function getPlatformPath(paths: {
   linux: string;
   win32: string;
 }): string {
-  const platform = process.platform as "darwin" | "linux" | "win32";
-  return paths[platform] ?? paths.linux;
+  const platform = process.platform;
+  if (platform === "darwin" || platform === "linux" || platform === "win32") {
+    return paths[platform];
+  }
+  warn(`Unsupported platform "${platform}", falling back to Linux paths`);
+  return paths.linux;
 }
 
 /**
