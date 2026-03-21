@@ -9,7 +9,7 @@ export const agentDefinitionSchema = {
   $schema: "http://json-schema.org/draft-07/schema#",
   title: "AgentDefinition",
   description:
-    "Declarative agent definition for agentsync. Each agent is defined by a JSON file matching this schema.",
+    "Declarative agent definition for agents-anywhere. Each agent is defined by a JSON file matching this schema.",
   type: "object",
   required: [
     "id",

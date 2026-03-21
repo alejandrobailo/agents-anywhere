@@ -1,9 +1,9 @@
 /**
- * agentsync init — detect agents, create config repo, scaffold structure.
+ * agents-anywhere init — detect agents, create config repo, scaffold structure.
  *
  * Creates:
- *   agentsync-config/
- *   ├── agentsync.json      (manifest)
+ *   agents-anywhere-config/
+ *   ├── agents-anywhere.json      (manifest)
  *   ├── mcp.json             (empty normalized MCP config)
  *   ├── .gitignore
  *   ├── claude-code/         (per-agent dirs for detected agents)
@@ -18,15 +18,15 @@ import { detectAgents } from "../core/detector.js";
 import type { DetectedAgent } from "../core/detector.js";
 import { heading, success, error, info, warn, dim } from "../utils/output.js";
 
-const DEFAULT_REPO_DIR = path.join(os.homedir(), "agentsync-config");
+const DEFAULT_REPO_DIR = path.join(os.homedir(), "agents-anywhere-config");
 
 const POST_MERGE_HOOK = `#!/bin/sh
-# agentsync post-merge hook — re-link configs and regenerate MCP on pull
-agentsync link
-agentsync mcp sync
+# agents-anywhere post-merge hook — re-link configs and regenerate MCP on pull
+agents-anywhere link
+agents-anywhere mcp sync
 `;
 
-const GITIGNORE = `# agentsync generated
+const GITIGNORE = `# agents-anywhere generated
 *.backup.*
 
 # OS files
@@ -69,9 +69,9 @@ export async function initCommand(
   }
 
   // Check if repo already exists
-  if (fs.existsSync(path.join(targetDir, "agentsync.json"))) {
+  if (fs.existsSync(path.join(targetDir, "agents-anywhere.json"))) {
     warn(`Config repo already exists at ${targetDir}`);
-    info("Run `agentsync link` to connect your agents.");
+    info("Run `agents-anywhere link` to connect your agents.");
     return;
   }
 
@@ -80,14 +80,14 @@ export async function initCommand(
   // Create repo directory
   fs.mkdirSync(targetDir, { recursive: true });
 
-  // Create agentsync.json manifest
+  // Create agents-anywhere.json manifest
   const manifest = buildManifest(installed, targetDir);
   fs.writeFileSync(
-    path.join(targetDir, "agentsync.json"),
+    path.join(targetDir, "agents-anywhere.json"),
     JSON.stringify(manifest, null, 2) + "\n",
     "utf-8",
   );
-  success("agentsync.json");
+  success("agents-anywhere.json");
 
   // Create empty mcp.json
   const emptyMCP = { servers: {} };
@@ -127,14 +127,14 @@ export async function initCommand(
   console.log(
     `\nCreated config repo at ${dim(targetDir)}`,
   );
-  info("Run `agentsync link` to connect your agents.");
+  info("Run `agents-anywhere link` to connect your agents.");
 }
 
 async function initFromRemote(url: string, targetDir: string): Promise<void> {
-  // Check if target already has agentsync.json
-  if (fs.existsSync(path.join(targetDir, "agentsync.json"))) {
+  // Check if target already has agents-anywhere.json
+  if (fs.existsSync(path.join(targetDir, "agents-anywhere.json"))) {
     warn(`Config repo already exists at ${targetDir}`);
-    info("Run `agentsync link` to connect your agents.");
+    info("Run `agents-anywhere link` to connect your agents.");
     return;
   }
 
@@ -148,16 +148,16 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
     return;
   }
 
-  // Verify the cloned repo is a valid agentsync config repo
-  if (!fs.existsSync(path.join(targetDir, "agentsync.json"))) {
+  // Verify the cloned repo is a valid agents-anywhere config repo
+  if (!fs.existsSync(path.join(targetDir, "agents-anywhere.json"))) {
     // Clean up the cloned directory since it's not a valid config repo
     fs.rmSync(targetDir, { recursive: true, force: true });
-    error(`Not an agentsync config repo: ${url} (no agentsync.json found)`);
+    error(`Not an agents-anywhere config repo: ${url} (no agents-anywhere.json found)`);
     return;
   }
 
   success(`Cloned config repo to ${targetDir}`);
-  info("Run `agentsync link && agentsync mcp sync` to connect your agents.");
+  info("Run `agents-anywhere link && agents-anywhere mcp sync` to connect your agents.");
 }
 
 function buildManifest(

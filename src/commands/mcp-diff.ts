@@ -1,5 +1,5 @@
 /**
- * agentsync mcp diff — preview what `mcp sync` would change for each agent.
+ * agents-anywhere mcp diff — preview what `mcp sync` would change for each agent.
  *
  * Reads mcp.json, transforms for each enabled agent, compares against
  * the existing config on disk, and shows a colored per-agent diff.
@@ -109,7 +109,7 @@ export async function mcpDiffCommand(): Promise<void> {
 
   const serverCount = Object.keys(config.servers).length;
   if (serverCount === 0) {
-    warn("No servers defined in mcp.json. Use `agentsync mcp add` to add one.");
+    warn("No servers defined in mcp.json. Use `agents-anywhere mcp add` to add one.");
     return;
   }
 
@@ -118,7 +118,7 @@ export async function mcpDiffCommand(): Promise<void> {
     .map(([id]) => id);
 
   if (enabledIds.length === 0) {
-    warn("No agents enabled in agentsync.json");
+    warn("No agents enabled in agents-anywhere.json");
     return;
   }
 
@@ -171,6 +171,6 @@ export async function mcpDiffCommand(): Promise<void> {
   if (!anyChanges) {
     success("All agents up to date");
   } else {
-    console.log(`Run ${bold("agentsync mcp sync")} to apply these changes.`);
+    console.log(`Run ${bold("agents-anywhere mcp sync")} to apply these changes.`);
   }
 }

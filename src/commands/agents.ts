@@ -1,5 +1,5 @@
 /**
- * agentsync agents — list all known agents with install and link status.
+ * agents-anywhere agents — list all known agents with install and link status.
  */
 
 import { detectAgents } from "../core/detector.js";

@@ -1,5 +1,5 @@
 /**
- * agentsync status — show link status for all agents and their config files.
+ * agents-anywhere status — show link status for all agents and their config files.
  */
 
 import { getStatus } from "../core/linker.js";
@@ -15,7 +15,7 @@ export async function statusCommand(): Promise<void> {
   const agentIds = Object.keys(manifest.agents);
 
   if (agentIds.length === 0) {
-    warn("No agents in agentsync.json");
+    warn("No agents in agents-anywhere.json");
     return;
   }
 

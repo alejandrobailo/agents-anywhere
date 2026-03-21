@@ -1,5 +1,5 @@
 /**
- * agentsync doctor — diagnose config health for all enabled agents.
+ * agents-anywhere doctor — diagnose config health for all enabled agents.
  *
  * Checks:
  *  1. Broken symlinks — linked files pointing to non-existent targets
@@ -48,7 +48,7 @@ export function checkBrokenSymlinks(
             issues.push({
               agent: def.name,
               message: `${item} → ${resolved} (target missing)`,
-              fix: `Run \`agentsync unlink ${id} && agentsync link ${id}\``,
+              fix: `Run \`agents-anywhere unlink ${id} && agents-anywhere link ${id}\``,
             });
           }
         }
@@ -124,7 +124,7 @@ export function checkStaleConfigs(
           issues.push({
             agent: def.name,
             message: `${item} is linked but missing from repo`,
-            fix: `Run \`agentsync unlink ${id}\` to clean up, then re-add the file`,
+            fix: `Run \`agents-anywhere unlink ${id}\` to clean up, then re-add the file`,
           });
         }
       } catch {
@@ -163,7 +163,7 @@ export function checkMCPFreshness(
         issues.push({
           agent: def.name,
           message: `${def.mcp.configPath} is older than mcp.json`,
-          fix: "Run `agentsync mcp sync` to regenerate",
+          fix: "Run `agents-anywhere mcp sync` to regenerate",
         });
       }
     }
@@ -182,11 +182,11 @@ export async function doctorCommand(): Promise<void> {
     .map(([id]) => id);
 
   if (enabledIds.length === 0) {
-    warn("No agents enabled in agentsync.json");
+    warn("No agents enabled in agents-anywhere.json");
     return;
   }
 
-  heading("agentsync doctor");
+  heading("agents-anywhere doctor");
   console.log();
 
   const agents = enabledIds

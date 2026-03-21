@@ -1,5 +1,5 @@
 /**
- * agentsync mcp sync — read mcp.json from repo, transform for each enabled agent,
+ * agents-anywhere mcp sync — read mcp.json from repo, transform for each enabled agent,
  * write to agent config dirs, show summary.
  */
 
@@ -30,7 +30,7 @@ export async function mcpSyncCommand(options: { dryRun?: boolean } = {}): Promis
 
   const serverCount = Object.keys(config.servers).length;
   if (serverCount === 0) {
-    warn("No servers defined in mcp.json. Use `agentsync mcp add` to add one.");
+    warn("No servers defined in mcp.json. Use `agents-anywhere mcp add` to add one.");
     return;
   }
 
@@ -41,7 +41,7 @@ export async function mcpSyncCommand(options: { dryRun?: boolean } = {}): Promis
     .map(([id]) => id);
 
   if (enabledIds.length === 0) {
-    warn("No agents enabled in agentsync.json");
+    warn("No agents enabled in agents-anywhere.json");
     return;
   }
 

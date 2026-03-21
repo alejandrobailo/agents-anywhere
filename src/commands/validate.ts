@@ -4,7 +4,7 @@ import { validateAgainstSchema, getAgentsDir } from "../core/schema-loader.js";
 import { success, error, heading, info } from "../utils/output.js";
 
 /**
- * `agentsync validate` — Load all agent definitions and report validation results.
+ * `agents-anywhere validate` — Load all agent definitions and report validation results.
  * Useful for contributors testing their agent JSON files.
  */
 export async function validateCommand(): Promise<void> {

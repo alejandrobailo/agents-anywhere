@@ -1,5 +1,5 @@
 /**
- * agentsync mcp list — read mcp.json and show table of servers
+ * agents-anywhere mcp list — read mcp.json and show table of servers
  * with transport type, command/URL, and env vars.
  */
 
@@ -24,7 +24,7 @@ export async function mcpListCommand(): Promise<void> {
 
   const servers = Object.entries(config.servers);
   if (servers.length === 0) {
-    warn("No MCP servers configured. Use `agentsync mcp add` to add one.");
+    warn("No MCP servers configured. Use `agents-anywhere mcp add` to add one.");
     return;
   }
 

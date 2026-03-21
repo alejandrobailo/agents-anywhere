@@ -1,5 +1,5 @@
 /**
- * agentsync mcp add <name> — add an MCP server to mcp.json.
+ * agents-anywhere mcp add <name> — add an MCP server to mcp.json.
  *
  * Supports two modes:
  * - Non-interactive: when --transport + (--command or --url) are provided, skips prompts
@@ -121,7 +121,7 @@ export async function mcpAddCommand(name: string, flags: McpAddFlags = {}): Prom
       config.servers[name] = serverFromFlags;
       fs.writeFileSync(mcpPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
       success(`Added server "${name}" to mcp.json`);
-      info("Run `agentsync mcp sync` to generate per-agent configs.");
+      info("Run `agents-anywhere mcp sync` to generate per-agent configs.");
     }
     // If transport was provided but buildServerFromFlags returned null,
     // it already printed an error — don't fall through to interactive
@@ -201,7 +201,7 @@ export async function mcpAddCommand(name: string, flags: McpAddFlags = {}): Prom
 
     fs.writeFileSync(mcpPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
     success(`Added server "${name}" to mcp.json`);
-    info("Run `agentsync mcp sync` to generate per-agent configs.");
+    info("Run `agents-anywhere mcp sync` to generate per-agent configs.");
   } finally {
     rl.close();
   }

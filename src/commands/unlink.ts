@@ -1,5 +1,5 @@
 /**
- * agentsync unlink [agent] — unlink agent configs and restore backups.
+ * agents-anywhere unlink [agent] — unlink agent configs and restore backups.
  */
 
 import { unlinkAgent } from "../core/linker.js";
@@ -30,7 +30,7 @@ export async function unlinkCommand(agentId?: string, options: { dryRun?: boolea
     const agentIds = Object.keys(manifest.agents);
 
     if (agentIds.length === 0) {
-      warn("No agents in agentsync.json");
+      warn("No agents in agents-anywhere.json");
       return;
     }
 

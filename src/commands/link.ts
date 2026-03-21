@@ -1,5 +1,5 @@
 /**
- * agentsync link [agent] — link agent configs from central repo to agent config dirs.
+ * agents-anywhere link [agent] — link agent configs from central repo to agent config dirs.
  */
 
 import { linkAgent } from "../core/linker.js";
@@ -26,7 +26,7 @@ export async function linkCommand(agentId?: string, options: { dryRun?: boolean 
       return;
     }
     if (!manifest.agents[agentId]?.enabled) {
-      warn(`Agent "${agentId}" is not enabled in agentsync.json`);
+      warn(`Agent "${agentId}" is not enabled in agents-anywhere.json`);
       return;
     }
     linkSingleAgent(agentDef, repoDir, dryRun, prefix);
@@ -38,7 +38,7 @@ export async function linkCommand(agentId?: string, options: { dryRun?: boolean 
       .map(([id]) => id);
 
     if (enabledIds.length === 0) {
-      warn("No agents enabled in agentsync.json");
+      warn("No agents enabled in agents-anywhere.json");
       return;
     }
 

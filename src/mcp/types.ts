@@ -1,7 +1,7 @@
 /**
  * Types for the normalized MCP configuration format.
  * This is the canonical format users write in mcp.json.
- * agentsync transforms this into per-agent formats.
+ * agents-anywhere transforms this into per-agent formats.
  */
 
 /** Reference to an environment variable — never stored as a literal value */

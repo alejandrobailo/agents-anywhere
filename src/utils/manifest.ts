@@ -1,5 +1,5 @@
 /**
- * Load and validate the agentsync.json manifest file.
+ * Load and validate the agents-anywhere.json manifest file.
  * Searches current directory and default location.
  */
 
@@ -19,17 +19,17 @@ export interface Manifest {
   agents: Record<string, ManifestAgent>;
 }
 
-const DEFAULT_REPO_DIR = path.join(os.homedir(), "agentsync-config");
+const DEFAULT_REPO_DIR = path.join(os.homedir(), "agents-anywhere-config");
 
 /**
- * Find and load the agentsync.json manifest.
+ * Find and load the agents-anywhere.json manifest.
  * Looks in the current directory first, then the default location.
  * Returns null and prints an error if not found.
  */
 export function loadManifest(): Manifest | null {
   const candidates = [
-    path.join(process.cwd(), "agentsync.json"),
-    path.join(DEFAULT_REPO_DIR, "agentsync.json"),
+    path.join(process.cwd(), "agents-anywhere.json"),
+    path.join(DEFAULT_REPO_DIR, "agents-anywhere.json"),
   ];
 
   for (const candidate of candidates) {
@@ -48,7 +48,7 @@ export function loadManifest(): Manifest | null {
     }
   }
 
-  error("No agentsync.json found. Run `agentsync init` first.");
+  error("No agents-anywhere.json found. Run `agents-anywhere init` first.");
   info(`Looked in: ${candidates.join(", ")}`);
   return null;
 }
