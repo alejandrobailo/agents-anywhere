@@ -1,5 +1,32 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Amazon Q Developer > snapshot: full Amazon Q Developer output 1`] = `
+{
+  "format": "json",
+  "rootKey": "mcpServers",
+  "servers": {
+    "github": {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github",
+      ],
+      "command": "npx",
+      "env": {
+        "GITHUB_TOKEN": "\${GITHUB_TOKEN}",
+      },
+      "type": "stdio",
+    },
+    "sentry": {
+      "headers": {
+        "Authorization": "Bearer \${SENTRY_TOKEN}",
+      },
+      "type": "http",
+      "url": "https://mcp.sentry.dev/sse",
+    },
+  },
+}
+`;
+
 exports[`Cursor > snapshot: full Cursor output 1`] = `
 {
   "format": "json",
