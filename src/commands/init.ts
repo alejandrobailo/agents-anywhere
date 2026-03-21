@@ -9,8 +9,9 @@
 import * as fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import * as readline from "node:readline/promises";
 import { execSync } from "node:child_process";
+import select from "@inquirer/select";
+import confirm from "@inquirer/confirm";
 import { simpleGit } from "simple-git";
 import { detectAgents } from "../core/detector.js";
 import type { DetectedAgent } from "../core/detector.js";
@@ -183,30 +184,15 @@ async function promptPrimaryAgent(
     return candidates[0];
   }
 
-  console.log(
-    "\nWhich agent is your primary? (its instructions become the source of truth)\n",
-  );
-  for (let i = 0; i < candidates.length; i++) {
-    console.log(`  ${i + 1}. ${candidates[i].definition.name}`);
-  }
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
+  const chosen = await select({
+    message: "Which agent is your primary? (its instructions become the source of truth)",
+    choices: candidates.map((c) => ({
+      name: c.definition.name,
+      value: c.definition.id,
+    })),
   });
-  try {
-    const answer = await rl.question(
-      `\nChoice [1-${candidates.length}]: `,
-    );
-    const idx = parseInt(answer.trim(), 10) - 1;
-    if (idx >= 0 && idx < candidates.length) {
-      return candidates[idx];
-    }
-    info(`Invalid choice, defaulting to ${candidates[0].definition.name}`);
-    return candidates[0];
-  } finally {
-    rl.close();
-  }
+
+  return candidates.find((c) => c.definition.id === chosen)!;
 }
 
 function copyPortableFiles(
@@ -443,29 +429,22 @@ async function promptGitHubRepo(repoDir: string): Promise<void> {
     return;
   }
 
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
+  const shouldCreate = await confirm({
+    message: "Create a private GitHub repo and push?",
+    default: false,
   });
-  try {
-    const answer = await rl.question(
-      "\nCreate a private GitHub repo and push? (y/N): ",
-    );
-    if (answer.trim().toLowerCase() !== "y") return;
+  if (!shouldCreate) return;
 
-    const repoName = path.basename(repoDir);
-    try {
-      execSync(
-        `gh repo create ${repoName} --private --source="${repoDir}" --push`,
-        { stdio: "inherit", cwd: repoDir },
-      );
-      success(`Created and pushed to private GitHub repo: ${repoName}`);
-    } catch (err) {
-      warn(`Failed to create GitHub repo: ${(err as Error).message}`);
-      info("You can create it manually later with: gh repo create");
-    }
-  } finally {
-    rl.close();
+  const repoName = path.basename(repoDir);
+  try {
+    execSync(
+      `gh repo create ${repoName} --private --source="${repoDir}" --push`,
+      { stdio: "inherit", cwd: repoDir },
+    );
+    success(`Created and pushed to private GitHub repo: ${repoName}`);
+  } catch (err) {
+    warn(`Failed to create GitHub repo: ${(err as Error).message}`);
+    info("You can create it manually later with: gh repo create");
   }
 }
 
