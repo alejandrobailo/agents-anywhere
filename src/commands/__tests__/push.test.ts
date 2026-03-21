@@ -66,4 +66,58 @@ describe("pushCommand", () => {
     await pushCommand();
     expect(logs.join("\n")).toContain("No remote configured");
   });
+
+  it("shows file names in output before committing", async () => {
+    writeManifest();
+    const git = simpleGit(tmpDir);
+    await git.init();
+    await git.addConfig("user.email", "test@test.com");
+    await git.addConfig("user.name", "Test");
+    await git.add(".");
+    await git.commit("initial");
+
+    fs.writeFileSync(path.join(tmpDir, "test.txt"), "hello");
+
+    await pushCommand();
+    const output = logs.join("\n");
+    expect(output).toContain("Changes to commit");
+    expect(output).toContain("test.txt");
+  });
+
+  it("dry-run shows changes but does not commit", async () => {
+    writeManifest();
+    const git = simpleGit(tmpDir);
+    await git.init();
+    await git.addConfig("user.email", "test@test.com");
+    await git.addConfig("user.name", "Test");
+    await git.add(".");
+    await git.commit("initial");
+
+    fs.writeFileSync(path.join(tmpDir, "test.txt"), "hello");
+
+    await pushCommand({ dryRun: true });
+    const output = logs.join("\n");
+    expect(output).toContain("Dry run");
+
+    // Verify no commit was made beyond the initial one
+    const logResult = await git.log();
+    expect(logResult.all).toHaveLength(1);
+  });
+
+  it("uses custom commit message when provided", async () => {
+    writeManifest();
+    const git = simpleGit(tmpDir);
+    await git.init();
+    await git.addConfig("user.email", "test@test.com");
+    await git.addConfig("user.name", "Test");
+    await git.add(".");
+    await git.commit("initial");
+
+    fs.writeFileSync(path.join(tmpDir, "test.txt"), "hello");
+
+    await pushCommand({ message: "Custom message" });
+
+    const logResult = await git.log();
+    expect(logResult.latest?.message).toBe("Custom message");
+  });
 });

@@ -4,9 +4,14 @@
 
 import { simpleGit } from "simple-git";
 import { loadManifest } from "../utils/manifest.js";
-import { heading, success, error, info, warn } from "../utils/output.js";
+import { heading, success, error, info, warn, green, yellow, red, cyan } from "../utils/output.js";
 
-export async function pushCommand(): Promise<void> {
+export interface PushOptions {
+  dryRun?: boolean;
+  message?: string;
+}
+
+export async function pushCommand(opts: PushOptions = {}): Promise<void> {
   const manifest = loadManifest();
   if (!manifest) return;
 
@@ -18,12 +23,35 @@ export async function pushCommand(): Promise<void> {
     return;
   }
 
-  heading("Pushing config changes...");
+  // Show what will be committed
+  heading("Changes to commit:");
+
+  const categories: Array<[string[], string, (s: string) => string]> = [
+    [status.created, "new file", green],
+    [status.not_added, "new file", green],
+    [status.modified, "modified", yellow],
+    [status.deleted, "deleted", red],
+    [status.renamed.map((r) => `${r.from} → ${r.to}`), "renamed", cyan],
+  ];
+
+  for (const [files, label, colorFn] of categories) {
+    for (const file of files) {
+      console.log(`  ${colorFn(label)}:  ${file}`);
+    }
+  }
+
+  console.log();
+
+  if (opts.dryRun) {
+    info("Dry run — no changes made.");
+    return;
+  }
 
   try {
     await git.add("-A");
 
-    const summary = await git.commit("Update agent configs");
+    const commitMsg = opts.message ?? "Update agent configs";
+    const summary = await git.commit(commitMsg);
     success(
       `Committed: ${summary.summary.changes} file(s) changed`,
     );
