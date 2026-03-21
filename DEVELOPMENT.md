@@ -16,171 +16,192 @@ npm run lint         # tsc --noEmit
 src/
 ├── cli.ts                     # Entry point — Commander program definition
 ├── version.ts                 # Single source of truth for package version
-├── index.ts                   # Public API (currently just re-exports version)
+├── index.ts                   # Public API (re-exports version)
 ├── schemas/
-│   ├── agent-schema.ts        # TypeScript types for agent definition JSON files
+│   ├── agent-schema.ts        # TypeScript types for agent definitions
 │   ├── agent-definition.schema.json  # JSON Schema (draft-07) for validation
-│   └── agent-definition-schema-data.ts  # Inlined JSON Schema as TS constant (bundle compatibility)
+│   └── agent-definition-schema-data.ts  # Inlined schema as TS constant (bundle compat)
 ├── core/
-│   ├── detector.ts            # Filesystem detection of installed agents
+│   ├── detector.ts            # Scan filesystem for installed agents
 │   ├── schema-loader.ts       # Load + validate agent JSON definitions from agents/
 │   └── linker.ts              # Symlink management (link, unlink, status, backup/restore)
 ├── mcp/
-│   ├── types.ts               # Normalized MCP config types (what users write in mcp.json)
+│   ├── types.ts               # Normalized MCP config types
 │   ├── parser.ts              # Parse + validate mcp.json
 │   ├── transformer.ts         # Transform normalized config → per-agent format
 │   └── writer.ts              # Write transformed configs (JSON, TOML, merge strategies)
-├── commands/
-│   ├── init.ts                # `agents-anywhere init` — scaffold config repo
-│   ├── link.ts                # `agents-anywhere link` — create symlinks
-│   ├── unlink.ts              # `agents-anywhere unlink` — remove symlinks, restore backups
-│   ├── status.ts              # `agents-anywhere status` — show link status
-│   ├── agents.ts              # `agents-anywhere agents` — list known agents
-│   ├── mcp-sync.ts            # `agents-anywhere mcp sync` — generate per-agent MCP configs
-│   ├── mcp-add.ts             # `agents-anywhere mcp add` — interactive server addition
-│   ├── mcp-list.ts            # `agents-anywhere mcp list` — list configured servers
-│   ├── mcp-diff.ts            # `agents-anywhere mcp diff` — preview sync changes
-│   ├── doctor.ts              # `agents-anywhere doctor` — config health diagnostics
-│   ├── validate.ts            # `agents-anywhere validate` — validate agent definition schemas
-│   └── export.ts              # `agents-anywhere export` — generate standalone install script
+├── commands/                  # One file per CLI command
 ├── utils/
 │   ├── output.ts              # ANSI-colored CLI output helpers
 │   ├── paths.ts               # Cross-platform path expansion (~, %APPDATA%)
 │   └── manifest.ts            # Load agents-anywhere.json manifest
 └── __tests__/
-    └── e2e.test.ts            # Full init → link → mcp sync → unlink integration tests
+    └── e2e.test.ts            # Full workflow integration tests
 
-agents/                        # Declarative agent definitions (JSON, shipped with package)
+agents/                        # Declarative agent definitions (shipped with package)
 ├── claude-code.json
 ├── codex.json
-├── cursor.json
-├── gemini-cli.json
 ├── opencode.json
-└── windsurf.json
+├── gemini-cli.json
+├── cursor.json
+├── windsurf.json
+├── github-copilot.json
+├── amazon-q.json
+├── kiro.json
+└── antigravity.json
 ```
 
 ## Architecture
 
-### Data Flow
+### Core concept: Agent Definitions
+
+Everything revolves around the JSON files in `agents/`. Each one declares what an agent looks like on disk — where it stores config, what files are portable, and how its MCP format works. **Adding a new agent = adding one JSON file.** No TypeScript code.
+
+### What happens when a user runs `agents-anywhere link`
 
 ```
-agents/*.json          User's mcp.json
-   │                       │
-   ▼                       ▼
-schema-loader          parser.ts
-   │                       │
-   ▼                       ▼
-AgentDefinition     NormalizedMCPConfig
-        \                /
-         \              /
-          ▼            ▼
-        transformer.ts
-              │
-              ▼
-        TransformResult { rootKey, servers, format }
-              │
-              ▼
-          writer.ts
-              │
-     ┌────────┼────────┐
-     ▼        ▼        ▼
-  writeJSON  mergeJSON  writeTOML
+agents/*.json → schema-loader → AgentDefinition[]
+                                        │
+agents-anywhere.json → manifest.ts → enabled agents
+                                        │
+                                        ▼
+                            linker.ts (for each agent)
+                                        │
+                         ┌──────────────┼──────────────┐
+                         ▼              ▼              ▼
+                    backup existing   create symlinks   report status
+                    files if needed   (repo → configDir)
+```
 
-### Dry-run Mode
+The linker reads the `portable` array from each agent definition and creates symlinks from the config repo to the agent's config directory. `commands/**` becomes a symlink at `~/.claude/commands` → `~/agents-anywhere-config/claude-code/commands`.
 
-The `link`, `unlink`, and `mcp sync` commands accept a `--dry-run` flag. When enabled, the commands compute results without writing to the filesystem — no symlinks, backups, or MCP configs are created or modified. The output is prefixed with `[dry-run]` to indicate preview mode.
+### What happens when a user runs `agents-anywhere mcp sync`
+
+```
+mcp.json (normalized)     agents/*.json
+        │                       │
+        ▼                       ▼
+    parser.ts            schema-loader
+        │                       │
+        ▼                       ▼
+NormalizedMCPConfig      AgentDefinition
+        \                      /
+         \                    /
+          ▼                  ▼
+         transformer.ts
+               │
+               ▼
+         TransformResult { rootKey, servers, format }
+               │
+      ┌────────┼────────┐
+      ▼        ▼        ▼
+   writeJSON  mergeJSON  writeTOML
 ```
 
 ### Key Design Decisions
 
-**Declarative agent definitions.** Adding support for a new agent requires only a JSON file in `agents/` — no TypeScript code. The schema (`agent-schema.ts`) defines the contract. The transformer and writer are fully generic.
+**Declarative agent definitions.** The schema (`agent-schema.ts`) defines the contract. The linker, transformer, and writer are fully generic — they read the definition and do the right thing.
 
-**Normalized MCP format.** Users write one `mcp.json` using `{ "$env": "VAR_NAME" }` references. The transformer resolves these to each agent's native syntax (`${VAR}`, `{env:VAR}`, named arrays, etc.).
+**Symlink-based linking.** Portable files are symlinked, not copied. Changes in either location reflect in both. Existing files are backed up before linking.
 
-**Three write strategies.** The writer module has three output modes, selected by the agent definition's `writeMode` and `format` fields:
+**Three MCP write strategies.** Selected by the agent definition's `writeMode` and `format`:
 
 | Strategy | When | Behavior |
 |---|---|---|
-| `writeJSON` | `writeMode: "standalone"`, `format: "json"` | Overwrites entire file with `{ [rootKey]: servers }` |
-| `mergeJSON` | `writeMode: "merge"`, `format: "json"` | Preserves non-MCP keys in existing JSON file |
-| `writeTOML` | `format: "toml"` | Merges `[rootKey]` section into existing TOML file |
+| `writeJSON` | `writeMode: "standalone"`, `format: "json"` | Overwrites file with `{ [rootKey]: servers }` |
+| `mergeJSON` | `writeMode: "merge"`, `format: "json"` | Preserves non-MCP keys in existing file |
+| `writeTOML` | `format: "toml"` | Merges `[rootKey]` section into existing TOML |
 
-**Symlink-based linking.** Portable config files are symlinked from the agent's config dir to the central repo. This means changes in either location are reflected in both. Existing files are backed up before linking.
+**Dry-run mode.** `link`, `unlink`, and `mcp sync` accept `--dry-run` to preview changes without writing to disk.
 
-## Agent Definition Schema
+## Adding a New Agent
 
-Each agent definition JSON must include these fields:
+1. Create `agents/<agent-id>.json`:
 
 ```jsonc
 {
-  "id": "my-agent",                    // Unique identifier, used as directory name
-  "name": "My Agent",                  // Display name
-  "configDir": {                       // Per-platform config directory
+  "id": "my-agent",
+  "name": "My Agent",
+  "configDir": {
     "darwin": "~/.my-agent",
     "linux": "~/.my-agent",
     "win32": "%APPDATA%/my-agent"
   },
-  "detect": {                          // How to check if the agent is installed
-    "type": "directory-exists",
+  "detect": {
+    "type": "directory-exists",     // how to check if installed
     "path": "~/.my-agent"
   },
-  "portable": ["config.json", "rules/**"],  // Files to symlink
-  "ignore": ["cache/**", "sessions/**"],    // Files to never sync
-  "credentials": ["~/.my-agent/auth.json"], // Files to warn about if found in repo
+  "portable": [                     // files to symlink across devices
+    "AGENTS.md",
+    "skills/**",
+    "config.json"
+  ],
+  "ignore": ["cache/**", "sessions/**"],
+  "credentials": ["~/.my-agent/auth.json"],
   "instructions": {
     "filename": "AGENTS.md",
     "globalPath": "~/.my-agent/AGENTS.md"
   },
   "mcp": {
-    "configPath": "mcp.json",          // Path relative to configDir
-    "scope": "user",                   // "user", "project", or "project-and-user"
-    "rootKey": "mcpServers",           // Top-level key wrapping server entries
-    "format": "json",                  // "json" or "toml"
-    "writeMode": "standalone",         // "standalone" (overwrite) or "merge" (preserve other keys)
-    "envSyntax": "${VAR}",             // Template — VAR is replaced with the env var name
-    "transports": {                    // Per-transport configuration
+    "configPath": "mcp.json",
+    "scope": "user",
+    "rootKey": "mcpServers",
+    "format": "json",
+    "writeMode": "standalone",
+    "envSyntax": "${VAR}",
+    "transports": {
       "stdio": { "typeField": "type", "typeValue": "stdio" },
       "http": { "typeField": "type", "typeValue": "http" }
     },
-    "commandType": "string",           // "string" (separate command + args) or "array" (combined)
-    "envKey": "env",                   // Key name for environment variables object
-    "envVarStyle": "inline"            // "inline" (env syntax template) or "named" (array of var names)
+    "commandType": "string",
+    "envKey": "env",
+    "envVarStyle": "inline"
   }
 }
 ```
 
-**Optional MCP fields:**
+2. Run `npm test` — schema-loader tests auto-validate the new definition.
 
-- `serverSection` — TOML section key for reading existing servers (defaults to `rootKey`). Used by `mcp diff`.
-- `defaultSyntax` — Fallback env syntax if not specified.
+3. Add MCP transformer snapshot tests:
 
-**Validation.** `schema-loader.ts` validates that `configPath`, `rootKey`, `envSyntax`, `writeMode`, and `commandType` are present. Missing fields cause a startup error.
+```ts
+describe("My Agent", () => {
+  it("transforms stdio server correctly", async () => {
+    const agent = await loadAgentById("my-agent");
+    const result = transformForAgent(sampleConfig, agent!);
+    expect(result).toMatchSnapshot();
+  });
+});
+```
 
-**envSyntax and envVarStyle.** These work together:
+4. `npx vitest run --update` to generate snapshots.
+5. `npm run build && npx agents-anywhere agents` to verify.
 
-- `envVarStyle: "inline"` — the `envSyntax` template (e.g. `${VAR}`) is used to wrap each env var reference inline.
-- `envVarStyle: "named"` — env vars are emitted as an array of names under `envKey` (e.g. Codex's `env_vars: ["GITHUB_TOKEN"]`). The `envSyntax` is not used for inline substitution in this mode.
+### Agent Definition Field Reference
 
-## MCP Transformation Pipeline
+**Core fields** — what files to sync:
+- `portable` — glob patterns of files/dirs to symlink (e.g. `"skills/**"`, `"CLAUDE.md"`)
+- `ignore` — files to never sync (sessions, cache, etc.)
+- `credentials` — files to warn about if found in the repo
+- `instructions` — the agent's instructions file (`CLAUDE.md`, `AGENTS.md`, etc.)
 
-The transformer (`transformer.ts`) converts normalized server entries into agent-specific format:
+**MCP fields** — how to generate MCP configs:
+- `configPath` — path relative to configDir
+- `rootKey` — top-level JSON/TOML key wrapping servers
+- `envSyntax` — template for env var references (`${VAR}`, `{env:VAR}`, etc.)
+- `envVarStyle` — `"inline"` (template substitution) or `"named"` (array of var names)
+- `commandType` — `"string"` (separate command + args) or `"array"` (combined)
+- `writeMode` — `"standalone"` (overwrite) or `"merge"` (preserve other keys)
+- `transports` — per-transport type field/value mapping
 
-1. **Transport type** — Sets the transport type field/value per the agent's `transports` config. If `typeField` is omitted, no type field is emitted (agent infers transport implicitly).
-
-2. **Command format** — `commandType: "string"` keeps `command` and `args` separate. `commandType: "array"` combines them into a single `command: [cmd, ...args]` array.
-
-3. **Env vars** — Two paths based on `envVarStyle`:
-   - `"inline"`: Each env ref is resolved via `envSyntax.replace("VAR", refName)`, producing strings like `${GITHUB_TOKEN}`.
-   - `"named"`: Env var names are collected into an array. Bearer tokens in headers are extracted to `bearer_token_env_var`.
-
-4. **URL key** — HTTP transport uses `transports.http.urlKey` (defaults to `"url"`, but Gemini uses `"httpUrl"`).
+Optional: `serverSection` (TOML section key for diff), `defaultSyntax` (fallback env syntax).
 
 ## Testing
 
 ```bash
-npm test                          # Run all tests
-npx vitest run src/mcp/           # Run tests in a specific directory
-npx vitest run -t "Claude Code"   # Run tests matching a pattern
+npm test                          # all tests
+npx vitest run src/core/          # specific directory
+npx vitest run -t "Claude Code"   # pattern match
 ```
 
 ### Test Organization
@@ -197,73 +218,46 @@ npx vitest run -t "Claude Code"   # Run tests matching a pattern
 | `commands/__tests__/export.test.ts` | Export script generation |
 | `commands/__tests__/validate.test.ts` | Agent definition schema validation |
 | `commands/__tests__/init.test.ts` | Init command and `--from` clone flow |
-| `commands/__tests__/mcp-add.test.ts` | Non-interactive `mcp add` (buildServerFromFlags) |
+| `commands/__tests__/mcp-add.test.ts` | Non-interactive `mcp add` flag parsing |
 | `commands/__tests__/status.test.ts` | Status display and link reporting |
 | `commands/__tests__/agents.test.ts` | Agent listing with install/link badges |
-| `commands/__tests__/mcp-list.test.ts` | MCP server listing with transport info |
-| `__tests__/e2e.test.ts` | Full workflow integration (init → link → mcp sync → unlink) |
-
-Transformer tests include **snapshots** for each agent's output. After changing transformation logic, update snapshots with:
-
-```bash
-npx vitest run --update
-```
+| `commands/__tests__/mcp-list.test.ts` | MCP server listing |
+| `__tests__/e2e.test.ts` | Full workflow (init → link → mcp sync → unlink) |
 
 ### Testing Conventions
 
-- Temp directories go in `os.tmpdir()`, never inside the source tree.
-- Mock `os.homedir()` to isolate filesystem tests from the real home directory.
-- Mock `process.cwd()` when testing commands that call `loadManifest()`.
-- All agent definitions are loaded from the real `agents/` directory (no mocking).
+- Temp directories in `os.tmpdir()`, never inside source tree
+- Mock `os.homedir()` to isolate from real home directory
+- Mock `process.cwd()` when testing commands that call `loadManifest()`
+- Agent definitions loaded from real `agents/` directory (no mocking)
 
 ## Build
 
-tsup builds both CJS and ESM bundles:
+tsup builds CJS and ESM bundles:
 
 ```bash
 npm run build    # tsup + copies agents/ to dist/agents/
 ```
 
-- CJS entry: `dist/cli.js` (used by the `agents-anywhere` bin command)
-- ESM entry: `dist/index.mjs` (public API — currently only exports `version`)
-- Agent definitions are copied to `dist/agents/` and located at runtime via `__dirname`
-- The JSON Schema for agent definition validation is inlined as a TypeScript constant in `src/schemas/agent-definition-schema-data.ts` (not read from disk at runtime) for bundle compatibility
+- CJS: `dist/cli.js` (bin entry point)
+- ESM: `dist/index.mjs` (public API)
+- Agent definitions copied to `dist/agents/`, located at runtime via `__dirname`
+- JSON Schema inlined as TS constant for bundle compatibility
+- Shebang added by tsup's `banner` config — `src/cli.ts` must NOT have its own
 
-The shebang (`#!/usr/bin/env node`) is added by tsup's `banner` config to both builds. `src/cli.ts` must NOT have its own shebang — tsup's banner is the single source.
-
-**Shared utilities.** `getAgentsDir()` is exported from `schema-loader.ts` and reused by `validate.ts` to locate the `agents/` directory. Do not duplicate this logic.
-
-## Adding a New Agent
-
-1. Create `agents/<agent-id>.json` following the schema above.
-2. Run `npm test` — the schema-loader tests will validate the new definition automatically.
-3. Add transformer snapshot tests in `mcp/__tests__/transformer.test.ts`:
-
-```ts
-describe("My Agent", () => {
-  it("transforms stdio server correctly", async () => {
-    const agent = await loadAgentById("my-agent");
-    const result = transformForAgent(sampleConfig, agent!);
-    expect(result).toMatchSnapshot();
-  });
-});
-```
-
-4. Run `npx vitest run --update` to generate the initial snapshot.
-5. Test manually: `npm run build && npx agents-anywhere agents` should show the new agent.
+**Shared utilities.** `getAgentsDir()` is exported from `schema-loader.ts` and reused by `validate.ts`. Do not duplicate.
 
 ## Common Patterns
 
-**Loading agent definitions** — Always use `loadAgentById()` or `loadAllAgentDefinitions()`. Results are cached after the first call.
+**Loading agents** — `loadAgentById()` or `loadAllAgentDefinitions()`. Cached after first call.
 
-**Path expansion** — Use `expandPath(getPlatformPath(def.configDir))` to get the resolved config directory for the current platform.
+**Path expansion** — `expandPath(getPlatformPath(def.configDir))` for resolved platform path.
 
-**Manifest loading** — `loadManifest()` searches `process.cwd()` then `~/agents-anywhere-config` for `agents-anywhere.json`. Returns `null` with an error message if not found. The `repoDir` is always derived from the manifest file's location (not from the JSON content) to prevent path traversal.
+**Manifest loading** — `loadManifest()` searches `process.cwd()` then `~/agents-anywhere-config` for `agents-anywhere.json`. Returns `null` if not found. `repoDir` derived from file location (not JSON content) to prevent path traversal.
 
-**Writer selection** — `mcp-sync.ts` routes to the correct writer based on `format` and `writeMode`:
-
+**Writer selection** — `mcp-sync.ts` routes based on `format` and `writeMode`:
 ```
-format === "toml"          → writeTOML(path, rootKey, servers)
-writeMode === "merge"      → mergeJSON(path, rootKey, servers)
-else                       → writeJSON(path, rootKey, servers)
+format === "toml"     → writeTOML(path, rootKey, servers)
+writeMode === "merge" → mergeJSON(path, rootKey, servers)
+else                  → writeJSON(path, rootKey, servers)
 ```
