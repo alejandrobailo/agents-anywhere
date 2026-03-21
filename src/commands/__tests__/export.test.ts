@@ -184,7 +184,7 @@ describe("generateExportScript", () => {
 
   it("replaces home directory with $HOME for portability", () => {
     const home = os.homedir();
-    const repoDir = path.join(home, "agentsync-config");
+    const repoDir = path.join(home, "agents-anywhere-config");
     const configDir = path.join(home, ".claude");
 
     const agentDef = makeAgent({ id: "claude-code", name: "Claude Code" });
@@ -197,10 +197,10 @@ describe("generateExportScript", () => {
     };
 
     const script = generateExportScript(repoDir, "{}", [agentInfo]);
-    expect(script).toContain('REPO_DIR="$HOME/agentsync-config"');
+    expect(script).toContain('REPO_DIR="$HOME/agents-anywhere-config"');
     expect(script).toContain('AGENT_CONFIG_DIR="$HOME/.claude"');
     // Should NOT contain the literal home directory path
-    expect(script).not.toContain(`"${home}/agentsync-config"`);
+    expect(script).not.toContain(`"${home}/agents-anywhere-config"`);
   });
 
   it("produces script with no empty agent section when portableItems is empty", () => {

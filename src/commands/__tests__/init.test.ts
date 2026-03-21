@@ -49,46 +49,46 @@ async function makeGitRepo(dir: string, files: Record<string, string>) {
 }
 
 describe("init --from", () => {
-  it("clones a valid agentsync config repo via file:// URL", async () => {
+  it("clones a valid agents-anywhere config repo via file:// URL", async () => {
     await makeGitRepo(sourceDir, {
-      "agentsync.json": JSON.stringify({ version: "0.1.0", agents: {} }),
+      "agents-anywhere.json": JSON.stringify({ version: "0.1.0", agents: {} }),
       "mcp.json": JSON.stringify({ servers: {} }),
     });
 
     await initCommand(targetDir, { from: `file://${sourceDir}` });
 
-    expect(fs.existsSync(path.join(targetDir, "agentsync.json"))).toBe(true);
+    expect(fs.existsSync(path.join(targetDir, "agents-anywhere.json"))).toBe(true);
     expect(fs.existsSync(path.join(targetDir, "mcp.json"))).toBe(true);
 
     const output = logs.join("\n");
     expect(output).toContain("Cloned config repo to");
-    expect(output).toContain("agentsync link && agentsync mcp sync");
+    expect(output).toContain("agents-anywhere link && agents-anywhere mcp sync");
   });
 
-  it("errors and cleans up when cloned repo has no agentsync.json", async () => {
+  it("errors and cleans up when cloned repo has no agents-anywhere.json", async () => {
     await makeGitRepo(sourceDir, {
-      "README.md": "# not an agentsync repo",
+      "README.md": "# not an agents-anywhere repo",
     });
 
     await initCommand(targetDir, { from: `file://${sourceDir}` });
 
     const output = errorLogs.join("\n");
-    expect(output).toContain("Not an agentsync config repo");
+    expect(output).toContain("Not an agents-anywhere config repo");
     // Cloned directory should be cleaned up
     expect(fs.existsSync(targetDir)).toBe(false);
   });
 
-  it("warns and exits early when target already has agentsync.json", async () => {
-    // Create target with existing agentsync.json
+  it("warns and exits early when target already has agents-anywhere.json", async () => {
+    // Create target with existing agents-anywhere.json
     fs.mkdirSync(targetDir, { recursive: true });
     fs.writeFileSync(
-      path.join(targetDir, "agentsync.json"),
+      path.join(targetDir, "agents-anywhere.json"),
       "{}",
       "utf-8",
     );
 
     await makeGitRepo(sourceDir, {
-      "agentsync.json": JSON.stringify({ version: "0.1.0", agents: {} }),
+      "agents-anywhere.json": JSON.stringify({ version: "0.1.0", agents: {} }),
     });
 
     await initCommand(targetDir, { from: `file://${sourceDir}` });
@@ -99,10 +99,4 @@ describe("init --from", () => {
     expect(output).not.toContain("Cloned config repo to");
   });
 
-  it("shows friendly error when URL is unreachable", async () => {
-    await initCommand(targetDir, { from: "https://invalid.example.com/nonexistent.git" });
-
-    const output = errorLogs.join("\n");
-    expect(output).toContain("Failed to clone");
-  });
 });

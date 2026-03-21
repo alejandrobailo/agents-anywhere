@@ -50,7 +50,7 @@ beforeEach(() => {
     `e2e-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   fakeHome = tmpDir;
-  repoDir = path.join(tmpDir, "agentsync-config");
+  repoDir = path.join(tmpDir, "agents-anywhere-config");
 
   // Create fake agent config dirs so detection works
   fs.mkdirSync(path.join(fakeHome, ".claude"), { recursive: true });
@@ -74,7 +74,7 @@ describe("e2e: init → link → mcp sync → unlink", () => {
     await initCommand(repoDir);
 
     // Verify manifest
-    const manifestPath = path.join(repoDir, "agentsync.json");
+    const manifestPath = path.join(repoDir, "agents-anywhere.json");
     expect(fs.existsSync(manifestPath)).toBe(true);
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
     expect(manifest.version).toBe("0.1.0");
@@ -108,8 +108,8 @@ describe("e2e: init → link → mcp sync → unlink", () => {
     const hookPath = path.join(repoDir, ".git", "hooks", "post-merge");
     expect(fs.existsSync(hookPath)).toBe(true);
     const hookContent = fs.readFileSync(hookPath, "utf-8");
-    expect(hookContent).toContain("agentsync link");
-    expect(hookContent).toContain("agentsync mcp sync");
+    expect(hookContent).toContain("agents-anywhere link");
+    expect(hookContent).toContain("agents-anywhere mcp sync");
   });
 
   it("link creates symlinks from agent config dirs to repo", async () => {
@@ -291,7 +291,7 @@ describe("e2e: init → link → mcp sync → unlink", () => {
   it("full workflow: init → link → mcp sync → verify → unlink → verify", async () => {
     // Step 1: Init
     await initCommand(repoDir);
-    expect(fs.existsSync(path.join(repoDir, "agentsync.json"))).toBe(true);
+    expect(fs.existsSync(path.join(repoDir, "agents-anywhere.json"))).toBe(true);
 
     // Step 2: Create portable files in repo
     fs.writeFileSync(
@@ -387,7 +387,7 @@ describe("e2e: init → link → mcp sync → unlink", () => {
       JSON.stringify(testMCPConfig, null, 2),
     );
 
-    // Mock cwd so loadManifest finds agentsync.json
+    // Mock cwd so loadManifest finds agents-anywhere.json
     vi.spyOn(process, "cwd").mockReturnValue(repoDir);
 
     await mcpSyncCommand();
@@ -461,7 +461,7 @@ describe("e2e: init → link → mcp sync → unlink", () => {
     );
 
     // Enable opencode in manifest (it uses writeMode: "merge")
-    const manifestPath = path.join(repoDir, "agentsync.json");
+    const manifestPath = path.join(repoDir, "agents-anywhere.json");
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
     manifest.agents["opencode"] = { enabled: true, name: "OpenCode" };
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
@@ -475,7 +475,7 @@ describe("e2e: init → link → mcp sync → unlink", () => {
       JSON.stringify({ theme: "dark", fontSize: 14 }, null, 2),
     );
 
-    // Mock cwd so loadManifest finds agentsync.json
+    // Mock cwd so loadManifest finds agents-anywhere.json
     vi.spyOn(process, "cwd").mockReturnValue(repoDir);
 
     await mcpSyncCommand();

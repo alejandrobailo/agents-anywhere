@@ -26,10 +26,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** Write a minimal agentsync.json manifest to the temp dir */
+/** Write a minimal agents-anywhere.json manifest to the temp dir */
 function writeManifest(): void {
   fs.writeFileSync(
-    path.join(tmpDir, "agentsync.json"),
+    path.join(tmpDir, "agents-anywhere.json"),
     JSON.stringify({
       version: "0.4.0",
       agents: {
