@@ -106,6 +106,24 @@ describe("detector", () => {
     });
   });
 
+  describe("command-exists detection", () => {
+    it("returns installed: true when command exists in PATH", () => {
+      const def = makeAgentDef({
+        detect: { type: "command-exists", command: "node" },
+      });
+      const result = detectSingleAgent(def);
+      expect(result.installed).toBe(true);
+    });
+
+    it("returns installed: false when command does not exist", () => {
+      const def = makeAgentDef({
+        detect: { type: "command-exists", command: "nonexistent-binary-xyz" },
+      });
+      const result = detectSingleAgent(def);
+      expect(result.installed).toBe(false);
+    });
+  });
+
   describe("detectAgents", () => {
     it("returns a DetectedAgent for each known agent definition", () => {
       const results = detectAgents();

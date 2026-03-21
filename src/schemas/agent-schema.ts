@@ -12,10 +12,9 @@ export interface PlatformPaths {
 }
 
 /** How to detect if an agent is installed */
-export interface DetectRule {
-  type: "directory-exists";
-  path: string;
-}
+export type DetectRule =
+  | { type: "directory-exists"; path: string }
+  | { type: "command-exists"; command: string };
 
 /** Agent instructions file configuration */
 export interface InstructionsConfig {

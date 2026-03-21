@@ -41,7 +41,7 @@ describe("schema-loader", () => {
       expect(claude.configDir.linux).toBe("~/.claude");
       expect(claude.configDir.win32).toBe("%APPDATA%/claude");
       expect(claude.detect.type).toBe("directory-exists");
-      expect(claude.detect.path).toBe("~/.claude");
+      expect(claude.detect.type === "directory-exists" && claude.detect.path).toBe("~/.claude");
       expect(claude.portable).toContain("settings.json");
       expect(claude.portable).toContain("CLAUDE.md");
       expect(claude.ignore).toContain("history.jsonl");
@@ -66,7 +66,7 @@ describe("schema-loader", () => {
       expect(codex.name).toBe("Codex CLI");
       expect(codex.configDir.darwin).toBe("~/.codex");
       expect(codex.detect.type).toBe("directory-exists");
-      expect(codex.detect.path).toBe("~/.codex");
+      expect(codex.detect.type === "directory-exists" && codex.detect.path).toBe("~/.codex");
       expect(codex.portable).toContain("config.toml");
       expect(codex.portable).toContain("AGENTS.md");
       expect(codex.instructions.filename).toBe("AGENTS.md");
@@ -237,6 +237,13 @@ describe("schema-loader", () => {
           (e) => e.path.includes("detect") && e.message.includes("file-exists"),
         ),
       ).toBe(true);
+    });
+
+    it("accepts a definition with command-exists detect type", () => {
+      const def = validDefinition();
+      def.detect = { type: "command-exists", command: "node" } as unknown as typeof def.detect;
+      const result = validateAgainstSchema(def);
+      expect(result.valid).toBe(true);
     });
 
     it("rejects a definition missing 'transports' in mcp", () => {

@@ -1,7 +1,9 @@
 import { existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import type { AgentDefinition } from "../schemas/agent-schema.js";
 import { loadAllAgentDefinitions } from "./schema-loader.js";
 import { expandPath, getPlatformPath } from "../utils/paths.js";
+import { debug } from "../utils/output.js";
 
 /** Result of detecting a single agent */
 export interface DetectedAgent {
@@ -37,7 +39,20 @@ function checkDetectRule(definition: AgentDefinition): boolean {
   switch (detect.type) {
     case "directory-exists":
       return existsSync(expandPath(detect.path));
+    case "command-exists":
+      return commandExists(detect.command);
     default:
       return false;
+  }
+}
+
+function commandExists(command: string): boolean {
+  try {
+    const cmd = process.platform === "win32" ? "where" : "which";
+    execFileSync(cmd, [command], { stdio: "ignore" });
+    return true;
+  } catch {
+    debug(`command-exists: "${command}" not found in PATH`);
+    return false;
   }
 }

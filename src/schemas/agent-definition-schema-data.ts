@@ -77,14 +77,15 @@ export const agentDefinitionSchema = {
     },
     DetectRule: {
       type: "object",
-      required: ["type", "path"],
+      required: ["type"],
       additionalProperties: false,
       properties: {
         type: {
           type: "string",
-          enum: ["directory-exists"],
+          enum: ["directory-exists", "command-exists"],
         },
         path: { type: "string" },
+        command: { type: "string" },
       },
     },
     InstructionsConfig: {
