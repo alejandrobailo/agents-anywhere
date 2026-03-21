@@ -55,8 +55,8 @@ Edit a skill in your repo, it's instantly live in the agent. Push to git, pull o
 | Gemini CLI | `GEMINI.md` | `skills/` | settings.json, commands/ |
 | Cursor | `rules/` | `skills/` | — |
 | Windsurf | `rules/` | `skills/` | memories/ |
-| GitHub Copilot | `copilot-instructions.md` | `skills/` | — |
-| Amazon Q | `rules/` | `skills/` | — |
+| GitHub Copilot CLI | `copilot-instructions.md` | `skills/` | — |
+| Amazon Q Developer | `rules/` | `skills/` | — |
 | Kiro | `steering/` | `skills/` | — |
 | Antigravity | `GEMINI.md` | `skills/` | — |
 
@@ -113,8 +113,11 @@ Each agent gets its native format — correct root keys, env var syntax, transpo
 | `agents-anywhere unlink [agent]` | Remove symlinks, restore backups |
 | `agents-anywhere status` | Show link status per agent and file |
 | `agents-anywhere agents` | List all known agents with install status |
+| `agents-anywhere enable <agent>` | Enable an agent in the manifest |
+| `agents-anywhere disable <agent>` | Disable an agent in the manifest |
 | `agents-anywhere mcp sync` | Generate per-agent MCP configs from `mcp.json` |
 | `agents-anywhere mcp add <name>` | Add an MCP server (interactive or with `--transport`, `--command`, `--url`, `--env` flags) |
+| `agents-anywhere mcp remove <name>` | Remove an MCP server from `mcp.json` |
 | `agents-anywhere mcp list` | Show all configured MCP servers |
 | `agents-anywhere mcp diff` | Preview what `mcp sync` would change |
 | `agents-anywhere doctor` | Diagnose broken symlinks, credentials in repo, stale configs |
@@ -148,8 +151,8 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for the full schema and contribution guide.
 | Gemini CLI | `~/.gemini/settings.json` (merged) | `mcpServers` | `${VAR}` |
 | Cursor | `~/.cursor/mcp.json` | `mcpServers` | `${env:VAR}` |
 | Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | `${env:VAR}` |
-| GitHub Copilot | `~/.copilot/mcp-config.json` | `mcpServers` | `${VAR}` |
-| Amazon Q | `~/.aws/amazonq/mcp.json` | `mcpServers` | `${VAR}` |
+| GitHub Copilot CLI | `~/.copilot/mcp-config.json` | `mcpServers` | `${VAR}` |
+| Amazon Q Developer | `~/.aws/amazonq/mcp.json` | `mcpServers` | `${VAR}` |
 | Kiro | `~/.kiro/settings/mcp.json` | `mcpServers` | `${VAR}` |
 | Antigravity | `~/.gemini/antigravity/mcp_config.json` | `mcpServers` | `${VAR}` |
 
