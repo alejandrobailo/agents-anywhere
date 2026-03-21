@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/demo-init.gif" alt="agents-anywhere init demo" width="800" />
+  <img src="https://raw.githubusercontent.com/alejandrobailo/agents-anywhere/main/assets/demo-init.gif" alt="agents-anywhere init demo" width="800" />
 </p>
 
 ---
