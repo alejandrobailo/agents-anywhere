@@ -77,10 +77,51 @@ export async function initCommand(
     }
   }
 
-  // Guard: already exists
+  // Guard: already exists — offer to re-link and sync
   if (fs.existsSync(path.join(targetDir, "agents-anywhere.json"))) {
     warn(`Config repo already exists at ${targetDir}`);
-    info("Run `agents-anywhere link` to connect your agents.");
+
+    // Check if remote is configured
+    let hasRemote = false;
+    try {
+      const remote = execSync("git remote get-url origin", {
+        cwd: targetDir,
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+      }).trim();
+      info(`Remote: ${remote}`);
+      hasRemote = true;
+    } catch {
+      warn("No git remote configured.");
+    }
+
+    if (process.stdin.isTTY) {
+      const shouldRelink = await confirm({
+        message: "Re-link agents and sync MCP configs?",
+        default: true,
+      });
+
+      if (shouldRelink) {
+        heading("Linking agent configs...");
+        for (const agent of installed) {
+          const results = linkAgent(agent.definition, targetDir);
+          const linked = results.filter(
+            (r) => r.action === "linked" || r.action === "backed-up-and-linked",
+          );
+          if (linked.length > 0) {
+            success(`${agent.definition.name} — ${linked.length} item(s) linked`);
+          } else {
+            info(`${agent.definition.name} — already linked`);
+          }
+        }
+        syncMCPToAllAgents(targetDir, installed);
+      }
+
+      if (!hasRemote) {
+        await promptGitHubRepo(targetDir);
+      }
+    }
+
     return;
   }
 
