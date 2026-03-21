@@ -236,6 +236,66 @@ async function promptPrimaryAgent(
   return candidates.find((c) => c.definition.id === chosen)!;
 }
 
+/**
+ * Resolve the best source path for a portable item.
+ * Priority: real file > symlink target > most recent backup.
+ */
+function resolveSourcePath(
+  sourcePath: string,
+  configDir: string,
+  item: string,
+): string | null {
+  const isSymlink = lstatExists(sourcePath) && fs.lstatSync(sourcePath).isSymbolicLink();
+
+  if (isSymlink) {
+    // Follow symlink — if target exists, use it
+    try {
+      const realPath = fs.realpathSync(sourcePath);
+      if (fs.existsSync(realPath)) return realPath;
+    } catch {
+      // Broken symlink — fall through to backup
+    }
+
+    // Broken symlink — look for a backup
+    const backup = findBackup(configDir, item);
+    if (backup) {
+      const backupPath = path.join(configDir, backup);
+      // Backup might also be a symlink — dereference it
+      if (lstatExists(backupPath) && fs.lstatSync(backupPath).isSymbolicLink()) {
+        try {
+          const realBackup = fs.realpathSync(backupPath);
+          if (fs.existsSync(realBackup)) return realBackup;
+        } catch {
+          return null;
+        }
+      }
+      if (fs.existsSync(backupPath)) return backupPath;
+    }
+    return null;
+  }
+
+  // Real file/dir
+  if (fs.existsSync(sourcePath)) return sourcePath;
+  return null;
+}
+
+/**
+ * Find the most recent backup for an item in a directory.
+ */
+function findBackup(dir: string, item: string): string | undefined {
+  try {
+    const entries = fs.readdirSync(dir);
+    const prefix = `${item}.backup.`;
+    const backups = entries
+      .filter((e) => e.startsWith(prefix))
+      .sort()
+      .reverse();
+    return backups[0];
+  } catch {
+    return undefined;
+  }
+}
+
 function copyPortableFiles(
   installed: DetectedAgent[],
   repoDir: string,
@@ -261,30 +321,16 @@ function copyPortableFiles(
       const sourcePath = path.join(configDir, item);
       const destPath = path.join(agentRepoDir, item);
 
-      if (!fs.existsSync(sourcePath)) continue;
+      // Resolve the actual source: real file, symlink target, or backup
+      const resolvedSource = resolveSourcePath(sourcePath, configDir, item);
+      if (!resolvedSource) continue;
 
-      // Skip symlinks to avoid copying from a previous setup
-      if (lstatExists(sourcePath) && fs.lstatSync(sourcePath).isSymbolicLink()) {
-        // Follow symlink and copy the real content
-        const realPath = fs.realpathSync(sourcePath);
-        if (!fs.existsSync(realPath)) continue;
-        const stat = fs.statSync(realPath);
-        if (stat.isDirectory()) {
-          fs.cpSync(realPath, destPath, { recursive: true });
-        } else {
-          fs.mkdirSync(path.dirname(destPath), { recursive: true });
-          fs.copyFileSync(realPath, destPath);
-        }
-        copied++;
-        continue;
-      }
-
-      const stat = fs.statSync(sourcePath);
+      const stat = fs.statSync(resolvedSource);
       if (stat.isDirectory()) {
-        fs.cpSync(sourcePath, destPath, { recursive: true, dereference: true });
+        fs.cpSync(resolvedSource, destPath, { recursive: true, dereference: true });
       } else {
         fs.mkdirSync(path.dirname(destPath), { recursive: true });
-        fs.copyFileSync(sourcePath, destPath);
+        fs.copyFileSync(resolvedSource, destPath);
       }
       copied++;
     }
