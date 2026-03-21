@@ -29,13 +29,17 @@ npx agentsync mcp sync
 ```bash
 $ agentsync init
 
-Detected 6 AI coding agents:
+Detected 10 AI coding agents:
   Claude Code    ~/.claude
   Codex CLI      ~/.codex
   OpenCode       ~/.config/opencode
   Gemini CLI     ~/.gemini
   Cursor         ~/.cursor
   Windsurf       ~/.codeium/windsurf
+  GitHub Copilot ~/.copilot
+  Amazon Q       ~/.aws/amazonq
+  Kiro           ~/.kiro
+  Antigravity    ~/.gemini/antigravity
 
 Created config repo at ~/agentsync-config
 Run `agentsync link` to connect your agents.
@@ -48,6 +52,10 @@ $ agentsync link
 [OK] Gemini CLI  — settings.json, GEMINI.md linked
 [OK] Cursor      — rules/ linked
 [OK] Windsurf    — mcp_config.json, memories/, rules/ linked
+[OK] GitHub Copilot — mcp-config.json linked
+[OK] Amazon Q    — mcp.json linked
+[OK] Kiro        — settings/mcp.json linked
+[OK] Antigravity — mcp_config.json linked
 ```
 
 - Scans for installed agents by checking known config directories
@@ -93,6 +101,10 @@ One canonical config generates tool-specific configs automatically.
 | Gemini CLI | `~/.gemini/settings.json` (merged) | `mcpServers` | `${VAR}` |
 | Cursor | `~/.cursor/mcp.json` | `mcpServers` | `${env:VAR}` |
 | Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | `${env:VAR}` |
+| GitHub Copilot | `~/.copilot/mcp-config.json` | `mcpServers` | `${VAR}` |
+| Amazon Q | `~/.aws/amazonq/mcp.json` | `mcpServers` | `${VAR}` |
+| Kiro | `~/.kiro/settings/mcp.json` | `mcpServers` | `${VAR}` |
+| Antigravity | `~/.gemini/antigravity/mcp_config.json` | `mcpServers` | `${VAR}` |
 
 ```bash
 $ agentsync mcp sync
@@ -103,6 +115,10 @@ $ agentsync mcp sync
 [OK] Gemini CLI  — 2 servers merged into ~/.gemini/settings.json
 [OK] Cursor      — 2 servers written to ~/.cursor/mcp.json
 [OK] Windsurf    — 2 servers written to ~/.codeium/windsurf/mcp_config.json
+[OK] GitHub Copilot — 2 servers written to ~/.copilot/mcp-config.json
+[OK] Amazon Q    — 2 servers written to ~/.aws/amazonq/mcp.json
+[OK] Kiro        — 2 servers written to ~/.kiro/settings/mcp.json
+[OK] Antigravity — 2 servers written to ~/.gemini/antigravity/mcp_config.json
 ```
 
 ### Non-interactive MCP Server Addition
@@ -168,10 +184,14 @@ The `link`, `unlink`, and `mcp sync` commands support a `--dry-run` flag to prev
 | Gemini CLI | `~/.gemini` | JSON | `settings.json` (merged) | `GEMINI.md` |
 | Cursor | `~/.cursor` | JSON | `mcp.json` | `rules/**` |
 | Windsurf | `~/.codeium/windsurf` | JSON | `mcp_config.json` | `rules/**` |
+| GitHub Copilot | `~/.copilot` | JSON | `mcp-config.json` | `.github/copilot-instructions.md` |
+| Amazon Q | `~/.aws/amazonq` | JSON | `mcp.json` | `.amazonq/rules/` |
+| Kiro | `~/.kiro` | JSON | `settings/mcp.json` | `.kiro/steering/` |
+| Antigravity | `~/.gemini/antigravity` | JSON | `mcp_config.json` | `GEMINI.md` |
 
 ### Planned
 
-Amp, Cline, Roo Code, and more.
+Cline, Roo Code, Kilo Code, Amp, Augment, Zed, and more.
 
 ## How It Works
 
@@ -186,6 +206,10 @@ mcp.json (normalized)
     +-- gemini adapter      --> merges into ~/.gemini/settings.json
     +-- cursor adapter      --> ~/.cursor/mcp.json
     +-- windsurf adapter    --> ~/.codeium/windsurf/mcp_config.json
+    +-- copilot adapter     --> ~/.copilot/mcp-config.json
+    +-- amazon-q adapter    --> ~/.aws/amazonq/mcp.json
+    +-- kiro adapter        --> ~/.kiro/settings/mcp.json
+    +-- antigravity adapter --> ~/.gemini/antigravity/mcp_config.json
 ```
 
 ### Repo structure (what you manage)
