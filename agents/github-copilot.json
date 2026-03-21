@@ -1,0 +1,39 @@
+{
+  "id": "github-copilot",
+  "name": "GitHub Copilot CLI",
+  "configDir": {
+    "darwin": "~/.copilot",
+    "linux": "~/.copilot",
+    "win32": "%APPDATA%/copilot"
+  },
+  "detect": {
+    "type": "directory-exists",
+    "path": "~/.copilot"
+  },
+  "portable": [],
+  "ignore": [
+    "cache/**",
+    "sessions/**",
+    "*.backup.*"
+  ],
+  "credentials": [],
+  "instructions": {
+    "filename": "copilot-instructions.md",
+    "globalPath": "~/.copilot/copilot-instructions.md"
+  },
+  "mcp": {
+    "configPath": "mcp-config.json",
+    "scope": "user",
+    "rootKey": "mcpServers",
+    "format": "json",
+    "writeMode": "standalone",
+    "envSyntax": "${VAR}",
+    "transports": {
+      "stdio": { "typeField": "type", "typeValue": "local" },
+      "http": { "typeField": "type", "typeValue": "http" }
+    },
+    "commandType": "string",
+    "envKey": "env",
+    "envVarStyle": "inline"
+  }
+}
