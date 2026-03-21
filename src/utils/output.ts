@@ -1,6 +1,7 @@
 /**
  * Colored console output helpers for CLI commands.
  * Uses ANSI escape codes directly — no dependencies.
+ * Respects NO_COLOR (https://no-color.org/) and FORCE_COLOR env vars.
  */
 
 const RESET = "\x1b[0m";
@@ -12,48 +13,63 @@ const YELLOW = "\x1b[33m";
 const BLUE = "\x1b[34m";
 const CYAN = "\x1b[36m";
 
+/** Check if color output should be used */
+export function useColor(): boolean {
+  if (process.env.NO_COLOR !== undefined) return false;
+  if (process.env.FORCE_COLOR !== undefined) return true;
+  return process.stdout.isTTY === true;
+}
+
+function wrap(code: string, msg: string): string {
+  return useColor() ? `${code}${msg}${RESET}` : msg;
+}
+
 export function info(msg: string): void {
-  console.log(`${BLUE}ℹ${RESET} ${msg}`);
+  const prefix = useColor() ? `${BLUE}ℹ${RESET}` : "ℹ";
+  console.log(`${prefix} ${msg}`);
 }
 
 export function success(msg: string): void {
-  console.log(`${GREEN}✓${RESET} ${msg}`);
+  const prefix = useColor() ? `${GREEN}✓${RESET}` : "✓";
+  console.log(`${prefix} ${msg}`);
 }
 
 export function warn(msg: string): void {
-  console.log(`${YELLOW}⚠${RESET} ${msg}`);
+  const prefix = useColor() ? `${YELLOW}⚠${RESET}` : "⚠";
+  console.log(`${prefix} ${msg}`);
 }
 
 export function error(msg: string): void {
-  console.error(`${RED}✗${RESET} ${msg}`);
+  const prefix = useColor() ? `${RED}✗${RESET}` : "✗";
+  console.error(`${prefix} ${msg}`);
 }
 
 export function heading(msg: string): void {
-  console.log(`\n${BOLD}${msg}${RESET}`);
+  console.log(`\n${wrap(BOLD, msg)}`);
 }
 
 export function dim(msg: string): string {
-  return `${DIM}${msg}${RESET}`;
+  return wrap(DIM, msg);
 }
 
 export function bold(msg: string): string {
-  return `${BOLD}${msg}${RESET}`;
+  return wrap(BOLD, msg);
 }
 
 export function green(msg: string): string {
-  return `${GREEN}${msg}${RESET}`;
+  return wrap(GREEN, msg);
 }
 
 export function yellow(msg: string): string {
-  return `${YELLOW}${msg}${RESET}`;
+  return wrap(YELLOW, msg);
 }
 
 export function red(msg: string): string {
-  return `${RED}${msg}${RESET}`;
+  return wrap(RED, msg);
 }
 
 export function cyan(msg: string): string {
-  return `${CYAN}${msg}${RESET}`;
+  return wrap(CYAN, msg);
 }
 
 /** Print a simple key-value table */
