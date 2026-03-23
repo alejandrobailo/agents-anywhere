@@ -42,6 +42,18 @@ describe("manifest — validation", () => {
     expect(result!.agents["claude-code"].enabled).toBe(true);
   });
 
+  it("loads a manifest without repoDir and derives it from file location", () => {
+    writeManifest({
+      version: "0.1.0",
+      agents: {
+        "claude-code": { enabled: true, name: "Claude Code" },
+      },
+    });
+    const result = loadManifest();
+    expect(result).not.toBeNull();
+    expect(result!.repoDir).toBe(tmpDir);
+  });
+
   it("rejects missing version", () => {
     writeManifest({ agents: {} });
     expect(loadManifest()).toBeNull();
@@ -122,6 +134,27 @@ describe("manifest — saveManifest", () => {
     );
     const parsed = JSON.parse(raw);
     expect(parsed.version).toBe("0.1.0");
+    expect(parsed.agents["claude-code"].enabled).toBe(true);
+  });
+
+  it("does not persist repoDir to disk", () => {
+    const manifest = {
+      version: "0.1.0",
+      repoDir: tmpDir,
+      primaryAgent: "claude-code",
+      agents: {
+        "claude-code": { enabled: true, name: "Claude Code" },
+      },
+    };
+    saveManifest(manifest);
+    const raw = fs.readFileSync(
+      path.join(tmpDir, "agents-anywhere.json"),
+      "utf-8",
+    );
+    const parsed = JSON.parse(raw);
+    expect(parsed.repoDir).toBeUndefined();
+    expect(parsed.version).toBe("0.1.0");
+    expect(parsed.primaryAgent).toBe("claude-code");
     expect(parsed.agents["claude-code"].enabled).toBe(true);
   });
 });

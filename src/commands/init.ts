@@ -21,6 +21,7 @@ import { parseMCPConfig } from "../mcp/parser.js";
 import { transformForAgent } from "../mcp/transformer.js";
 import { writeJSON, mergeJSON, writeTOML } from "../mcp/writer.js";
 import { expandPath, getPlatformPath } from "../utils/paths.js";
+import type { Manifest } from "../utils/manifest.js";
 import { heading, success, error, info, warn, dim, debug } from "../utils/output.js";
 
 const DEFAULT_REPO_DIR = path.join(os.homedir(), "agents-anywhere-config");
@@ -148,7 +149,7 @@ export async function initCommand(
   importMCPServers(installed, targetDir);
 
   // Step 7: Write manifest, .gitignore, post-merge hook
-  const manifest = buildManifest(installed, targetDir, primary.definition.id);
+  const manifest = buildManifest(installed, primary.definition.id);
   fs.writeFileSync(
     path.join(targetDir, "agents-anywhere.json"),
     JSON.stringify(manifest, null, 2) + "\n",
@@ -585,12 +586,10 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
 
 function buildManifest(
   installedAgents: DetectedAgent[],
-  repoDir: string,
   primaryAgentId: string,
-): Record<string, unknown> {
+): Omit<Manifest, "repoDir"> {
   return {
     version: "0.1.0",
-    repoDir,
     primaryAgent: primaryAgentId,
     agents: Object.fromEntries(
       installedAgents.map((a) => [
