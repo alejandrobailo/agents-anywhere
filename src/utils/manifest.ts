@@ -106,8 +106,9 @@ export function loadManifest(): Manifest | null {
   return null;
 }
 
-/** Save the manifest back to disk */
+/** Save the manifest back to disk, stripping device-specific repoDir */
 export function saveManifest(manifest: Manifest): void {
   const filePath = path.join(manifest.repoDir, "agents-anywhere.json");
-  fs.writeFileSync(filePath, JSON.stringify(manifest, null, 2) + "\n", "utf-8");
+  const { repoDir: _, ...persistable } = manifest;
+  fs.writeFileSync(filePath, JSON.stringify(persistable, null, 2) + "\n", "utf-8");
 }
