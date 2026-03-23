@@ -62,7 +62,8 @@ describe("init --from", () => {
 
     const output = logs.join("\n");
     expect(output).toContain("Cloned config repo to");
-    expect(output).toContain("agents-anywhere link && agents-anywhere mcp sync");
+    // initFromRemote now auto-detects and links agents
+    expect(output).toContain("Detecting installed AI coding agents");
   });
 
   it("errors and cleans up when cloned repo has no agents-anywhere.json", async () => {
