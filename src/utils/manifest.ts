@@ -15,6 +15,7 @@ export interface ManifestAgent {
 
 export interface Manifest {
   version: string;
+  /** Derived at runtime from manifest file location; not persisted to disk. */
   repoDir: string;
   primaryAgent?: string;
   agents: Record<string, ManifestAgent>;

@@ -21,6 +21,7 @@ import { parseMCPConfig } from "../mcp/parser.js";
 import { transformForAgent } from "../mcp/transformer.js";
 import { writeJSON, mergeJSON, writeTOML } from "../mcp/writer.js";
 import { expandPath, getPlatformPath } from "../utils/paths.js";
+import type { Manifest } from "../utils/manifest.js";
 import { heading, success, error, info, warn, dim, debug } from "../utils/output.js";
 
 const DEFAULT_REPO_DIR = path.join(os.homedir(), "agents-anywhere-config");
@@ -586,7 +587,7 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
 function buildManifest(
   installedAgents: DetectedAgent[],
   primaryAgentId: string,
-): Record<string, unknown> {
+): Omit<Manifest, "repoDir"> {
   return {
     version: "0.1.0",
     primaryAgent: primaryAgentId,
