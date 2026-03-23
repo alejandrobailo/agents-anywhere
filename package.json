@@ -1,6 +1,6 @@
 {
   "name": "agents-anywhere",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Manage your AI coding agent configs in one place. One MCP config for every tool. Sync between devices with git.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
