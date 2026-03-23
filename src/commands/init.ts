@@ -16,6 +16,7 @@ import { simpleGit } from "simple-git";
 import { detectAgents } from "../core/detector.js";
 import type { DetectedAgent } from "../core/detector.js";
 import { linkAgent, getPortableItems, lstatExists } from "../core/linker.js";
+import { diffLocalVsRepo, copyLocalToRepo } from "../core/sync.js";
 import { importAndMergeAll } from "../mcp/importer.js";
 import { parseMCPConfig } from "../mcp/parser.js";
 import { transformForAgent } from "../mcp/transformer.js";
@@ -545,7 +546,7 @@ async function promptGitHubRepo(repoDir: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// --from (unchanged)
+// --from (clone + detect + merge + link)
 // ---------------------------------------------------------------------------
 
 async function initFromRemote(url: string, targetDir: string): Promise<void> {
@@ -574,9 +575,108 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
   }
 
   success(`Cloned config repo to ${targetDir}`);
-  info(
-    "Run `agents-anywhere link && agents-anywhere mcp sync` to connect your agents.",
+
+  // Detect installed agents on this device
+  heading("Detecting installed AI coding agents...");
+  const agents = detectAgents();
+  const installed = agents.filter((a) => a.installed);
+
+  if (installed.length === 0) {
+    warn("No AI coding agents detected on this machine.");
+    info("Run `agents-anywhere link` after installing an agent.");
+    return;
+  }
+
+  for (const agent of agents) {
+    if (agent.installed) {
+      success(`${agent.definition.name}    ${dim(agent.configDir)}`);
+    } else {
+      info(`${agent.definition.name}    ${dim("not installed")}`);
+    }
+  }
+
+  // Compare local portable files against cloned repo
+  const diffs = diffLocalVsRepo(installed, targetDir);
+  const localOnly = diffs.filter((d) => d.status === "local-only");
+
+  if (localOnly.length > 0) {
+    heading("Local files not in remote repo:");
+    for (const diff of localOnly) {
+      info(`  ${diff.agentName} — ${diff.item}`);
+    }
+
+    let shouldMerge = true;
+    if (process.stdin.isTTY) {
+      shouldMerge = await confirm({
+        message: "Copy these local files into the repo? (No = use remote as-is)",
+        default: true,
+      });
+    }
+
+    if (shouldMerge) {
+      for (const diff of localOnly) {
+        copyLocalToRepo(diff);
+        success(`Copied ${diff.agentName}/${diff.item}`);
+      }
+    }
+  }
+
+  // Update manifest with newly detected agents
+  const manifestPath = path.join(targetDir, "agents-anywhere.json");
+  const raw = fs.readFileSync(manifestPath, "utf-8");
+  const manifestData = JSON.parse(raw);
+  for (const agent of installed) {
+    if (!manifestData.agents[agent.definition.id]) {
+      manifestData.agents[agent.definition.id] = {
+        enabled: true,
+        name: agent.definition.name,
+      };
+    }
+  }
+  fs.writeFileSync(
+    manifestPath,
+    JSON.stringify(manifestData, null, 2) + "\n",
+    "utf-8",
   );
+
+  // Install post-merge hook
+  const hooksDir = path.join(targetDir, ".git", "hooks");
+  fs.mkdirSync(hooksDir, { recursive: true });
+  fs.writeFileSync(path.join(hooksDir, "post-merge"), POST_MERGE_HOOK, {
+    mode: 0o755,
+  });
+
+  // Link all installed agents
+  heading("Linking agent configs...");
+  for (const agent of installed) {
+    const results = linkAgent(agent.definition, targetDir);
+    const linked = results.filter(
+      (r) => r.action === "linked" || r.action === "backed-up-and-linked",
+    );
+    if (linked.length > 0) {
+      const items = linked.map((r) => r.item).join(", ");
+      success(`${agent.definition.name} — ${items} linked`);
+      for (const r of results) {
+        if (r.action === "backed-up-and-linked") {
+          info(`  backed up existing ${r.item}`);
+        }
+      }
+    }
+  }
+
+  // Sync MCP configs
+  syncMCPToAllAgents(targetDir, installed);
+
+  // Commit any local additions
+  const repoGit = simpleGit(targetDir);
+  const status = await repoGit.status();
+  if (!status.isClean()) {
+    await repoGit.add(".");
+    await repoGit.commit("Merge local agent configs from new device");
+    success("Committed local config additions");
+  }
+
+  console.log(`\n${dim("Setup complete!")} Config repo at ${dim(targetDir)}`);
 }
 
 // ---------------------------------------------------------------------------
