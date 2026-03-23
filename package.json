@@ -12,7 +12,7 @@
     "agents-anywhere": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsup && cp -r agents dist/agents",
+    "build": "tsup && rm -rf dist/agents && cp -r agents dist/agents",
     "dev": "tsup --watch",
     "test": "vitest run",
     "lint": "tsc --noEmit"
