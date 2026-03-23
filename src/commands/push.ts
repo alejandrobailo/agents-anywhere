@@ -27,12 +27,15 @@ export async function pushCommand(opts: PushOptions = {}): Promise<void> {
 
     if (enabledInstalled.length > 0) {
       const diffs = diffLocalVsRepo(enabledInstalled, manifest.repoDir);
-      const localOnly = diffs.filter((d) => d.status === "local-only");
+      const actionable = diffs.filter(
+        (d) => d.status === "local-only" || d.status === "diverged",
+      );
 
-      if (localOnly.length > 0) {
-        heading("Local files not yet in repo:");
-        for (const diff of localOnly) {
-          info(`  ${diff.agentName} — ${diff.item}`);
+      if (actionable.length > 0) {
+        heading("Local files to sync with repo:");
+        for (const diff of actionable) {
+          const label = diff.status === "diverged" ? "changed" : "new";
+          info(`  ${diff.agentName} — ${diff.item} (${label})`);
         }
 
         let shouldCopy = true;
@@ -44,15 +47,15 @@ export async function pushCommand(opts: PushOptions = {}): Promise<void> {
         }
 
         if (shouldCopy && !opts.dryRun) {
-          for (const diff of localOnly) {
+          for (const diff of actionable) {
             copyLocalToRepo(diff);
             success(`Copied ${diff.agentName}/${diff.item}`);
           }
         }
       }
     }
-  } catch {
-    // If detection fails (e.g., agent definitions not found), continue with git-only push
+  } catch (err) {
+    warn(`Sync check skipped: ${(err as Error).message}`);
   }
 
   // Git operations

@@ -122,7 +122,16 @@ function hasContentDifference(
   if (localStat.isDirectory() && repoStat.isDirectory()) {
     const localEntries = fs.readdirSync(localPath).sort();
     const repoEntries = fs.readdirSync(repoPath).sort();
-    return JSON.stringify(localEntries) !== JSON.stringify(repoEntries);
+    if (JSON.stringify(localEntries) !== JSON.stringify(repoEntries)) return true;
+    for (const entry of localEntries) {
+      if (
+        repoEntries.includes(entry) &&
+        hasContentDifference(path.join(localPath, entry), path.join(repoPath, entry))
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   if (localStat.isFile() && repoStat.isFile()) {

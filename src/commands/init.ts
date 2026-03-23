@@ -597,12 +597,15 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
 
   // Compare local portable files against cloned repo
   const diffs = diffLocalVsRepo(installed, targetDir);
-  const localOnly = diffs.filter((d) => d.status === "local-only");
+  const actionable = diffs.filter(
+    (d) => d.status === "local-only" || d.status === "diverged",
+  );
 
-  if (localOnly.length > 0) {
-    heading("Local files not in remote repo:");
-    for (const diff of localOnly) {
-      info(`  ${diff.agentName} — ${diff.item}`);
+  if (actionable.length > 0) {
+    heading("Local files to sync with repo:");
+    for (const diff of actionable) {
+      const label = diff.status === "diverged" ? "changed" : "new";
+      info(`  ${diff.agentName} — ${diff.item} (${label})`);
     }
 
     let shouldMerge = true;
@@ -614,7 +617,7 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
     }
 
     if (shouldMerge) {
-      for (const diff of localOnly) {
+      for (const diff of actionable) {
         copyLocalToRepo(diff);
         success(`Copied ${diff.agentName}/${diff.item}`);
       }
@@ -623,11 +626,21 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
 
   // Update manifest with newly detected agents
   const manifestPath = path.join(targetDir, "agents-anywhere.json");
-  const raw = fs.readFileSync(manifestPath, "utf-8");
-  const manifestData = JSON.parse(raw);
+  let manifestData: Record<string, unknown>;
+  try {
+    const raw = fs.readFileSync(manifestPath, "utf-8");
+    manifestData = JSON.parse(raw);
+  } catch (err) {
+    error(`Invalid manifest in cloned repo: ${(err as Error).message}`);
+    return;
+  }
+  if (!manifestData.agents || typeof manifestData.agents !== "object") {
+    manifestData.agents = {};
+  }
+  const agents_record = manifestData.agents as Record<string, unknown>;
   for (const agent of installed) {
-    if (!manifestData.agents[agent.definition.id]) {
-      manifestData.agents[agent.definition.id] = {
+    if (!agents_record[agent.definition.id]) {
+      agents_record[agent.definition.id] = {
         enabled: true,
         name: agent.definition.name,
       };

@@ -118,6 +118,20 @@ describe("diffLocalVsRepo", () => {
     expect(diffs.filter((d) => d.item === "cache")).toHaveLength(0);
   });
 
+  it("detects diverged directories with same entries but different file contents", () => {
+    const localSkills = path.join(configDir, "skills");
+    const repoSkills = path.join(repoDir, "test-agent", "skills");
+    fs.mkdirSync(localSkills, { recursive: true });
+    fs.mkdirSync(repoSkills, { recursive: true });
+    fs.writeFileSync(path.join(localSkills, "my-skill.md"), "# Local version");
+    fs.writeFileSync(path.join(repoSkills, "my-skill.md"), "# Repo version");
+    const diffs = diffLocalVsRepo([makeAgent()], repoDir);
+    const diverged = diffs.filter(
+      (d) => d.status === "diverged" && d.item === "skills",
+    );
+    expect(diverged).toHaveLength(1);
+  });
+
   it("detects local-only directories", () => {
     const skillsDir = path.join(configDir, "skills");
     fs.mkdirSync(skillsDir, { recursive: true });
