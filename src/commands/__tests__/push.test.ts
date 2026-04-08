@@ -5,6 +5,10 @@ import { simpleGit } from "simple-git";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { pushCommand } from "../push.js";
 
+vi.mock("../../core/detector.js", () => ({
+  detectAgents: () => [],
+}));
+
 let tmpDir: string;
 let logs: string[];
 let errorLogs: string[];

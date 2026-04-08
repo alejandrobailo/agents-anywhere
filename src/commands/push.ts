@@ -7,6 +7,7 @@ import { simpleGit } from "simple-git";
 import { loadManifest } from "../utils/manifest.js";
 import { detectAgents } from "../core/detector.js";
 import { diffLocalVsRepo, copyLocalToRepo } from "../core/sync.js";
+import { linkAgent } from "../core/linker.js";
 import { heading, success, error, info, warn, green, yellow, red, cyan } from "../utils/output.js";
 
 export interface PushOptions {
@@ -115,5 +116,25 @@ export async function pushCommand(opts: PushOptions = {}): Promise<void> {
     success("Pushed to remote.");
   } catch (err) {
     error(`Push failed: ${(err as Error).message}`);
+    return;
+  }
+
+  // Re-link copied files so local config dirs stay clean
+  // (replaces real files with symlinks pointing to the repo copies)
+  try {
+    const agents = detectAgents();
+    const enabledInstalled = agents.filter(
+      (a) => a.installed && manifest.agents[a.definition.id]?.enabled,
+    );
+    for (const agent of enabledInstalled) {
+      const results = linkAgent(agent.definition, manifest.repoDir);
+      for (const r of results) {
+        if (r.action === "backed-up-and-linked") {
+          success(`Re-linked ${agent.definition.name}/${r.item}`);
+        }
+      }
+    }
+  } catch (err) {
+    warn(`Re-link after push skipped: ${(err as Error).message}`);
   }
 }
