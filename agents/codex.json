@@ -13,7 +13,8 @@
   "portable": [
     "config.toml",
     "AGENTS.md",
-    "skills/**"
+    "skills/**",
+    "plugins/cache/local-plugins/**"
   ],
   "ignore": [
     "sessions/**",

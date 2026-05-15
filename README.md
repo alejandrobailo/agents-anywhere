@@ -39,7 +39,7 @@ That's it. `init` detects your installed agents, picks a primary, copies configs
 | Agent | Instructions | Skills | Other portable files |
 |---|---|---|---|
 | Claude Code | `CLAUDE.md` | `skills/` | settings.json, keybindings.json, commands/ |
-| Codex CLI | `AGENTS.md` | `skills/` | config.toml |
+| Codex CLI | `AGENTS.md` | `skills/` | config.toml, local plugins |
 | OpenCode | `AGENTS.md` | `skills/` | opencode.json |
 | Gemini CLI | `GEMINI.md` | `skills/` | settings.json, commands/ |
 | Cursor | `rules/` | `skills/` | — |

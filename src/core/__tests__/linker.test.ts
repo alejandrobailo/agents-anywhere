@@ -11,7 +11,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { linkAgent, unlinkAgent, getStatus } from "../linker.js";
+import { linkAgent, unlinkAgent, getStatus, getPortableItems } from "../linker.js";
 import type { AgentDefinition } from "../../schemas/agent-schema.js";
 
 let tmpDir: string;
@@ -67,6 +67,26 @@ afterEach(() => {
 });
 
 describe("linker", () => {
+  describe("getPortableItems", () => {
+    it("preserves nested portable roots", () => {
+      const items = getPortableItems(
+        makeAgentDef({
+          portable: [
+            "settings.json",
+            "commands/**",
+            "plugins/cache/local-plugins/**",
+          ],
+        }),
+      );
+
+      expect(items).toEqual([
+        "settings.json",
+        "commands",
+        "plugins/cache/local-plugins",
+      ]);
+    });
+  });
+
   describe("linkAgent", () => {
     it("creates symlinks for portable files that exist in repo", () => {
       const repoFile = path.join(repoDir, "test-agent", "settings.json");
@@ -95,6 +115,33 @@ describe("linker", () => {
 
       const agentCommands = path.join(configDir, "commands");
       expect(lstatSync(agentCommands).isSymbolicLink()).toBe(true);
+    });
+
+    it("creates parent directories for nested portable roots", () => {
+      const repoPluginsDir = path.join(
+        repoDir,
+        "test-agent",
+        "plugins",
+        "cache",
+        "local-plugins",
+      );
+      mkdirSync(repoPluginsDir, { recursive: true });
+      writeFileSync(path.join(repoPluginsDir, "plugin.json"), "{}");
+
+      const results = linkAgent(
+        makeAgentDef({ portable: ["plugins/cache/local-plugins/**"] }),
+        repoDir,
+      );
+
+      expect(results[0].item).toBe("plugins/cache/local-plugins");
+      expect(results[0].action).toBe("linked");
+      const agentPlugins = path.join(
+        configDir,
+        "plugins",
+        "cache",
+        "local-plugins",
+      );
+      expect(lstatSync(agentPlugins).isSymbolicLink()).toBe(true);
     });
 
     it("backs up existing real files before linking", () => {

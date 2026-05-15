@@ -111,6 +111,8 @@ describe("generateExportScript", () => {
     const script = generateExportScript(tmpDir, "{}", [agentInfo]);
     // Should contain ln -s for symlink creation
     expect(script).toContain('ln -s "$SRC" "$DEST"');
+    // Should create parent dirs for nested portable roots
+    expect(script).toContain('mkdir -p "$(dirname "$DEST")"');
     // Should check source existence before symlinking
     expect(script).toContain(
       'if [ -e "$REPO_DIR/test-agent/settings.json" ]; then',

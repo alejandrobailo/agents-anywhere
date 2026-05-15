@@ -142,6 +142,28 @@ describe("diffLocalVsRepo", () => {
     );
     expect(localOnly).toHaveLength(1);
   });
+
+  it("detects local-only nested portable roots", () => {
+    const localPlugins = path.join(
+      configDir,
+      "plugins",
+      "cache",
+      "local-plugins",
+    );
+    fs.mkdirSync(localPlugins, { recursive: true });
+    fs.writeFileSync(path.join(localPlugins, "plugin.json"), "{}");
+
+    const diffs = diffLocalVsRepo(
+      [makeAgent({ portable: ["plugins/cache/local-plugins/**"] })],
+      repoDir,
+    );
+    const localOnly = diffs.filter(
+      (d) =>
+        d.status === "local-only" &&
+        d.item === "plugins/cache/local-plugins",
+    );
+    expect(localOnly).toHaveLength(1);
+  });
 });
 
 describe("copyLocalToRepo", () => {
@@ -175,5 +197,27 @@ describe("copyLocalToRepo", () => {
     };
     copyLocalToRepo(diff);
     expect(fs.existsSync(path.join(diff.repoPath, "run.md"))).toBe(true);
+  });
+
+  it("copies a nested directory recursively", () => {
+    const localDir = path.join(configDir, "plugins", "cache", "local-plugins");
+    fs.mkdirSync(localDir, { recursive: true });
+    fs.writeFileSync(path.join(localDir, "plugin.json"), "{}");
+    const diff: SyncDiff = {
+      agentId: "test-agent",
+      agentName: "Test Agent",
+      item: "plugins/cache/local-plugins",
+      localPath: localDir,
+      repoPath: path.join(
+        repoDir,
+        "test-agent",
+        "plugins",
+        "cache",
+        "local-plugins",
+      ),
+      status: "local-only",
+    };
+    copyLocalToRepo(diff);
+    expect(fs.existsSync(path.join(diff.repoPath, "plugin.json"))).toBe(true);
   });
 });

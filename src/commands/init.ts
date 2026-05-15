@@ -328,6 +328,7 @@ function copyPortableFiles(
 
       const stat = fs.statSync(resolvedSource);
       if (stat.isDirectory()) {
+        fs.mkdirSync(path.dirname(destPath), { recursive: true });
         fs.cpSync(resolvedSource, destPath, { recursive: true, dereference: true });
       } else {
         fs.mkdirSync(path.dirname(destPath), { recursive: true });

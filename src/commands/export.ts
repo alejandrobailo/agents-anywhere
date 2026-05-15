@@ -183,6 +183,7 @@ export function generateExportScript(
         );
         lines.push(`  DEST="$AGENT_CONFIG_DIR/${item}"`);
         lines.push(`  SRC="$REPO_DIR/${agent.agentDef.id}/${item}"`);
+        lines.push('  mkdir -p "$(dirname "$DEST")"');
         lines.push('  if [ -L "$DEST" ]; then');
         lines.push('    rm "$DEST"');
         lines.push('  elif [ -e "$DEST" ]; then');

@@ -54,15 +54,15 @@ function resolvePaths(
 
 /**
  * Get the list of concrete portable items for an agent.
- * Expands glob patterns like "commands/**" to just the directory name "commands".
- * Returns deduplicated list of top-level items.
+ * Expands glob patterns like "commands/**" to "commands" and
+ * "plugins/cache/local-plugins/**" to "plugins/cache/local-plugins".
+ * Returns deduplicated file/dir roots.
  */
 export function getPortableItems(agentDef: AgentDefinition): string[] {
   const items = new Set<string>();
   for (const pattern of agentDef.portable) {
-    // "commands/**" → "commands", "settings.json" → "settings.json"
-    const topLevel = pattern.split("/")[0];
-    items.add(topLevel);
+    const item = pattern.endsWith("/**") ? pattern.slice(0, -3) : pattern;
+    items.add(item);
   }
   return [...items];
 }
@@ -113,6 +113,7 @@ export function linkAgent(
 
       // Existing real file/dir or wrong symlink — backup
       if (!dryRun) {
+        mkdirSync(path.dirname(agentPath), { recursive: true });
         const backupPath = `${agentPath}.backup.${backupTimestamp()}`;
         renameSync(agentPath, backupPath);
         symlinkSync(repoPath, agentPath);
@@ -123,6 +124,7 @@ export function linkAgent(
 
     // No existing file — create symlink
     if (!dryRun) {
+      mkdirSync(path.dirname(agentPath), { recursive: true });
       symlinkSync(repoPath, agentPath);
     }
     results.push({ item, action: "linked", agentPath });

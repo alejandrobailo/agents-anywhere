@@ -109,7 +109,7 @@ agents-anywhere.json → manifest.ts → enabled agents
                     files if needed   (repo → configDir)
 ```
 
-The linker reads the `portable` array from each agent definition and creates symlinks from the config repo to the agent's config directory. `commands/**` becomes a symlink at `~/.claude/commands` → `~/agents-anywhere-config/claude-code/commands`.
+The linker reads the `portable` array from each agent definition and creates symlinks from the config repo to the agent's config directory. `commands/**` becomes a symlink at `~/.claude/commands` → `~/agents-anywhere-config/claude-code/commands`; nested roots like `plugins/cache/local-plugins/**` are preserved as `plugins/cache/local-plugins`.
 
 ### MCP: forward transform and reverse import
 
