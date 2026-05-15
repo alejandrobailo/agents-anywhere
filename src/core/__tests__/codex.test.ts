@@ -72,14 +72,18 @@ describe("configureCodexLocalPlugins", () => {
     fs.mkdirSync(pluginRoot, { recursive: true });
     fs.writeFileSync(
       path.join(pluginRoot, "plugin.json"),
-      JSON.stringify({ name: "caveman" }),
+      JSON.stringify({
+        name: "caveman",
+        interface: { category: "Productivity" },
+      }),
     );
 
+    const homeDir = path.join(tmpDir, "home");
     const result = configureCodexLocalPlugins(
       makeCodexDef(),
       repoDir,
       false,
-      "/Users/local-user",
+      homeDir,
     );
 
     const localConfig = path.join(configDir, "config.toml");
@@ -93,11 +97,32 @@ describe("configureCodexLocalPlugins", () => {
     >;
     expect(parsed.plugins["caveman@local-plugins"].enabled).toBe(true);
     expect(parsed.marketplaces["local-plugins"].source).toBe(
-      "/Users/local-user",
+      homeDir,
     );
+    expect(result.marketplaceUpdated).toBe(true);
+    expect(
+      fs.lstatSync(path.join(homeDir, "plugins", "caveman")).isSymbolicLink(),
+    ).toBe(true);
+    expect(fs.readlinkSync(path.join(homeDir, "plugins", "caveman"))).toBe(
+      path.join(configDir, "plugins/cache/local-plugins/caveman/0.1.0"),
+    );
+    const marketplace = JSON.parse(
+      fs.readFileSync(
+        path.join(homeDir, ".agents", "plugins", "marketplace.json"),
+        "utf-8",
+      ),
+    ) as {
+      plugins: Array<{ name: string; source: { path: string } }>;
+    };
+    expect(marketplace.plugins).toEqual([
+      expect.objectContaining({
+        name: "caveman",
+        source: { source: "local", path: "./plugins/caveman" },
+      }),
+    ]);
 
     const repoContent = fs.readFileSync(repoConfig, "utf-8");
-    expect(repoContent).not.toContain("/Users/local-user");
+    expect(repoContent).not.toContain(homeDir);
   });
 
   it("copies repo config as a local file when Codex config is missing", () => {

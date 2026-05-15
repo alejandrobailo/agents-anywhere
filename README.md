@@ -87,7 +87,7 @@ agents-anywhere-config/           # your git repo
 └── agents-anywhere.json          # manifest
 ```
 
-Your primary agent's instructions (e.g., `CLAUDE.md`) become the source of truth. Other agents get symlinks with the correct filename. Edit once, synced everywhere. Codex `config.toml` stays local because it contains machine-specific absolute paths; MCP servers are generated into it from `mcp.json`.
+Your primary agent's instructions (e.g., `CLAUDE.md`) become the source of truth. Other agents get symlinks with the correct filename. Edit once, synced everywhere. Codex `config.toml` stays local because it contains machine-specific absolute paths; MCP servers are generated into it from `mcp.json`. For local Codex plugins, `link codex` also creates the home-local marketplace files Codex uses to list plugins in the UI.
 
 ## MCP Normalization
 

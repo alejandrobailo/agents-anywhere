@@ -9,6 +9,13 @@ export interface CodexLocalPluginConfigResult {
   materializedConfig: boolean;
   copiedConfigFromRepo: boolean;
   pluginCount: number;
+  marketplaceUpdated: boolean;
+}
+
+interface LocalPlugin {
+  name: string;
+  cachePath: string;
+  category: string;
 }
 
 export function configureCodexLocalPlugins(
@@ -21,6 +28,7 @@ export function configureCodexLocalPlugins(
     materializedConfig: false,
     copiedConfigFromRepo: false,
     pluginCount: 0,
+    marketplaceUpdated: false,
   };
 
   if (agentDef.id !== "codex") return result;
@@ -55,15 +63,18 @@ export function configureCodexLocalPlugins(
     "cache",
     "local-plugins",
   );
-  const pluginNames = findLocalPluginNames(localPluginsDir);
-  result.pluginCount = pluginNames.length;
-  if (pluginNames.length === 0 || dryRun) return result;
+  const pluginsFound = findLocalPlugins(localPluginsDir);
+  result.pluginCount = pluginsFound.length;
+  if (pluginsFound.length === 0 || dryRun) return result;
 
   const existing = parseTomlFile(configPath);
   const plugins = ensureRecord(existing, "plugins");
-  for (const pluginName of pluginNames) {
-    plugins[`${pluginName}@local-plugins`] = { enabled: true };
+  for (const plugin of pluginsFound) {
+    plugins[`${plugin.name}@local-plugins`] = { enabled: true };
   }
+
+  ensureHomeLocalPluginMarketplace(homeDir, pluginsFound);
+  result.marketplaceUpdated = true;
 
   const marketplaces = ensureRecord(existing, "marketplaces");
   const localMarketplace = ensureRecord(marketplaces, "local-plugins");
@@ -99,10 +110,95 @@ function ensureRecord(
   return parent[key] as Record<string, unknown>;
 }
 
-function findLocalPluginNames(localPluginsDir: string): string[] {
+function ensureHomeLocalPluginMarketplace(
+  homeDir: string,
+  plugins: LocalPlugin[],
+): void {
+  const pluginsDir = path.join(homeDir, "plugins");
+  const marketplacePath = path.join(
+    homeDir,
+    ".agents",
+    "plugins",
+    "marketplace.json",
+  );
+
+  fs.mkdirSync(pluginsDir, { recursive: true });
+  fs.mkdirSync(path.dirname(marketplacePath), { recursive: true });
+
+  for (const plugin of plugins) {
+    const sourcePath = path.join(pluginsDir, plugin.name);
+    if (!fs.existsSync(sourcePath)) {
+      fs.symlinkSync(plugin.cachePath, sourcePath);
+    }
+  }
+
+  const marketplace = readMarketplace(marketplacePath);
+  const entries = Array.isArray(marketplace.plugins)
+    ? marketplace.plugins
+    : [];
+  const existingNames = new Set(
+    entries
+      .map((entry) =>
+        typeof entry === "object" &&
+        entry !== null &&
+        "name" in entry &&
+        typeof entry.name === "string"
+          ? entry.name
+          : undefined,
+      )
+      .filter((name): name is string => typeof name === "string"),
+  );
+
+  for (const plugin of plugins) {
+    if (existingNames.has(plugin.name)) continue;
+    entries.push({
+      name: plugin.name,
+      source: {
+        source: "local",
+        path: `./plugins/${plugin.name}`,
+      },
+      policy: {
+        installation: "INSTALLED_BY_DEFAULT",
+        authentication: "ON_INSTALL",
+      },
+      category: plugin.category,
+    });
+  }
+
+  marketplace.plugins = entries;
+  fs.writeFileSync(
+    marketplacePath,
+    JSON.stringify(marketplace, null, 2) + "\n",
+    "utf-8",
+  );
+}
+
+function readMarketplace(filePath: string): Record<string, unknown> {
+  if (fs.existsSync(filePath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<
+        string,
+        unknown
+      >;
+      if (typeof parsed === "object" && parsed !== null) return parsed;
+    } catch {
+      // Fall through and rebuild a minimal marketplace.
+    }
+  }
+
+  return {
+    name: "local-plugins",
+    interface: {
+      displayName: "Local Plugins",
+    },
+    plugins: [],
+  };
+}
+
+function findLocalPlugins(localPluginsDir: string): LocalPlugin[] {
   if (!fs.existsSync(localPluginsDir)) return [];
 
-  const names = new Set<string>();
+  const plugins = new Map<string, LocalPlugin>();
   for (const pluginDirName of fs.readdirSync(localPluginsDir)) {
     const pluginDir = path.join(localPluginsDir, pluginDirName);
     if (!isDirectory(pluginDir)) continue;
@@ -116,24 +212,41 @@ function findLocalPluginNames(localPluginsDir: string): string[] {
       );
       if (!fs.existsSync(pluginJsonPath)) continue;
 
-      const pluginName = readPluginName(pluginJsonPath) ?? pluginDirName;
-      names.add(pluginName);
+      const metadata = readPluginMetadata(pluginJsonPath);
+      const pluginName = metadata.name ?? pluginDirName;
+      plugins.set(pluginName, {
+        name: pluginName,
+        cachePath: path.dirname(path.dirname(pluginJsonPath)),
+        category: metadata.category ?? "Productivity",
+      });
     }
   }
 
-  return [...names].sort();
+  return [...plugins.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
-function readPluginName(pluginJsonPath: string): string | undefined {
+function readPluginMetadata(pluginJsonPath: string): {
+  name?: string;
+  category?: string;
+} {
   try {
     const parsed = JSON.parse(fs.readFileSync(pluginJsonPath, "utf-8")) as {
       name?: unknown;
+      interface?: { category?: unknown };
     };
-    return typeof parsed.name === "string" && parsed.name.length > 0
-      ? parsed.name
-      : undefined;
+    return {
+      name:
+        typeof parsed.name === "string" && parsed.name.length > 0
+          ? parsed.name
+          : undefined,
+      category:
+        typeof parsed.interface?.category === "string" &&
+        parsed.interface.category.length > 0
+          ? parsed.interface.category
+          : undefined,
+    };
   } catch {
-    return undefined;
+    return {};
   }
 }
 

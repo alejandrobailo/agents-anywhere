@@ -148,6 +148,9 @@ export async function pushCommand(opts: PushOptions = {}): Promise<void> {
         if (codexResult.pluginCount > 0) {
           success(`${agent.definition.name} — registered ${codexResult.pluginCount} local plugin(s)`);
         }
+        if (codexResult.marketplaceUpdated) {
+          success(`${agent.definition.name} — updated local plugin marketplace`);
+        }
       }
     }
   } catch (err) {

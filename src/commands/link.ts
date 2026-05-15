@@ -107,6 +107,9 @@ function configureCodexAfterLink(
         `${prefix}${agentDef.name} — registered ${codexResult.pluginCount} local plugin(s)`,
       );
     }
+    if (codexResult.marketplaceUpdated) {
+      success(`${prefix}${agentDef.name} — updated local plugin marketplace`);
+    }
   } catch (err) {
     warn(`${prefix}${agentDef.name} — local plugin config skipped: ${(err as Error).message}`);
   }

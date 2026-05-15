@@ -713,6 +713,9 @@ function configureCodexAfterLink(
     if (result.pluginCount > 0) {
       success(`${agentDef.name} — registered ${result.pluginCount} local plugin(s)`);
     }
+    if (result.marketplaceUpdated) {
+      success(`${agentDef.name} — updated local plugin marketplace`);
+    }
   } catch (err) {
     warn(`${agentDef.name} — local plugin config skipped: ${(err as Error).message}`);
   }
