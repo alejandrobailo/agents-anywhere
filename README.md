@@ -39,7 +39,7 @@ That's it. `init` detects your installed agents, picks a primary, copies configs
 | Agent | Instructions | Skills | Other portable files |
 |---|---|---|---|
 | Claude Code | `CLAUDE.md` | `skills/` | settings.json, keybindings.json, commands/ |
-| Codex CLI | `AGENTS.md` | `skills/` | config.toml, local plugins |
+| Codex CLI | `AGENTS.md` | `skills/` | local plugins |
 | OpenCode | `AGENTS.md` | `skills/` | opencode.json |
 | Gemini CLI | `GEMINI.md` | `skills/` | settings.json, commands/ |
 | Cursor | `rules/` | `skills/` | — |
@@ -77,8 +77,9 @@ agents-anywhere-config/           # your git repo
 │   └── commands/                 # → ~/.claude/commands/
 ├── codex/
 │   ├── AGENTS.md                 # → symlink to claude-code/CLAUDE.md
-│   ├── config.toml               # → ~/.codex/config.toml
-│   └── skills/                   # → ~/.codex/skills/
+│   ├── skills/                   # → ~/.codex/skills/
+│   └── plugins/cache/local-plugins/
+│                                   # → ~/.codex/plugins/cache/local-plugins/
 ├── opencode/
 │   ├── AGENTS.md                 # → symlink to claude-code/CLAUDE.md
 │   └── skills/                   # → ~/.config/opencode/skills/
@@ -86,7 +87,7 @@ agents-anywhere-config/           # your git repo
 └── agents-anywhere.json          # manifest
 ```
 
-Your primary agent's instructions (e.g., `CLAUDE.md`) become the source of truth. Other agents get symlinks with the correct filename. Edit once, synced everywhere.
+Your primary agent's instructions (e.g., `CLAUDE.md`) become the source of truth. Other agents get symlinks with the correct filename. Edit once, synced everywhere. Codex `config.toml` stays local because it contains machine-specific absolute paths; MCP servers are generated into it from `mcp.json`.
 
 ## MCP Normalization
 

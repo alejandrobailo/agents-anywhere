@@ -8,6 +8,7 @@ import { loadManifest } from "../utils/manifest.js";
 import { detectAgents } from "../core/detector.js";
 import { diffLocalVsRepo, copyLocalToRepo } from "../core/sync.js";
 import { linkAgent } from "../core/linker.js";
+import { configureCodexLocalPlugins } from "../core/codex.js";
 import { heading, success, error, info, warn, green, yellow, red, cyan } from "../utils/output.js";
 
 export interface PushOptions {
@@ -131,6 +132,21 @@ export async function pushCommand(opts: PushOptions = {}): Promise<void> {
       for (const r of results) {
         if (r.action === "backed-up-and-linked") {
           success(`Re-linked ${agent.definition.name}/${r.item}`);
+        }
+      }
+      if (agent.definition.id === "codex") {
+        const codexResult = configureCodexLocalPlugins(
+          agent.definition,
+          manifest.repoDir,
+        );
+        if (codexResult.materializedConfig) {
+          success(`${agent.definition.name} — materialized config.toml for this machine`);
+        }
+        if (codexResult.copiedConfigFromRepo) {
+          success(`${agent.definition.name} — copied config.toml as a local file`);
+        }
+        if (codexResult.pluginCount > 0) {
+          success(`${agent.definition.name} — registered ${codexResult.pluginCount} local plugin(s)`);
         }
       }
     }

@@ -3,6 +3,7 @@
  */
 
 import { linkAgent } from "../core/linker.js";
+import { configureCodexLocalPlugins } from "../core/codex.js";
 import { loadAgentById, loadAllAgentDefinitions } from "../core/schema-loader.js";
 import { heading, success, info, warn, error, dim } from "../utils/output.js";
 import { loadManifest } from "../utils/manifest.js";
@@ -58,6 +59,7 @@ function linkSingleAgent(agentDef: AgentDefinition, repoDir: string, dryRun: boo
 
   if (results.length === 0) {
     info(`${prefix}${agentDef.name} — no portable files found in repo`);
+    configureCodexAfterLink(agentDef, repoDir, dryRun, prefix);
     return;
   }
 
@@ -76,5 +78,36 @@ function linkSingleAgent(agentDef: AgentDefinition, repoDir: string, dryRun: boo
     if (r.action === "backed-up-and-linked") {
       info(`${prefix}  backed up existing ${r.item}`);
     }
+  }
+
+  configureCodexAfterLink(agentDef, repoDir, dryRun, prefix);
+}
+
+function configureCodexAfterLink(
+  agentDef: AgentDefinition,
+  repoDir: string,
+  dryRun: boolean,
+  prefix: string,
+): void {
+  if (agentDef.id !== "codex") return;
+  try {
+    const codexResult = configureCodexLocalPlugins(
+      agentDef,
+      repoDir,
+      dryRun,
+    );
+    if (codexResult.materializedConfig) {
+      success(`${prefix}${agentDef.name} — materialized config.toml for this machine`);
+    }
+    if (codexResult.copiedConfigFromRepo) {
+      success(`${prefix}${agentDef.name} — copied config.toml as a local file`);
+    }
+    if (codexResult.pluginCount > 0) {
+      success(
+        `${prefix}${agentDef.name} — registered ${codexResult.pluginCount} local plugin(s)`,
+      );
+    }
+  } catch (err) {
+    warn(`${prefix}${agentDef.name} — local plugin config skipped: ${(err as Error).message}`);
   }
 }

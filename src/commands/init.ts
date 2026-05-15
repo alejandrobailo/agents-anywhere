@@ -16,6 +16,7 @@ import { simpleGit } from "simple-git";
 import { detectAgents } from "../core/detector.js";
 import type { DetectedAgent } from "../core/detector.js";
 import { linkAgent, getPortableItems, lstatExists } from "../core/linker.js";
+import { configureCodexLocalPlugins } from "../core/codex.js";
 import { diffLocalVsRepo, copyLocalToRepo } from "../core/sync.js";
 import { importAndMergeAll } from "../mcp/importer.js";
 import { parseMCPConfig } from "../mcp/parser.js";
@@ -114,6 +115,7 @@ export async function initCommand(
           } else {
             info(`${agent.definition.name} — already linked`);
           }
+          configureCodexAfterLink(agent.definition, targetDir);
         }
         syncMCPToAllAgents(targetDir, installed);
       }
@@ -177,6 +179,7 @@ export async function initCommand(
     if (linked.length > 0) {
       success(`${agent.definition.name} — ${linked.length} item(s) linked`);
     }
+    configureCodexAfterLink(agent.definition, targetDir);
   }
 
   // Step 9: MCP sync
@@ -676,6 +679,7 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
         }
       }
     }
+    configureCodexAfterLink(agent.definition, targetDir);
   }
 
   // Sync MCP configs
@@ -691,6 +695,27 @@ async function initFromRemote(url: string, targetDir: string): Promise<void> {
   }
 
   console.log(`\n${dim("Setup complete!")} Config repo at ${dim(targetDir)}`);
+}
+
+function configureCodexAfterLink(
+  agentDef: DetectedAgent["definition"],
+  repoDir: string,
+): void {
+  if (agentDef.id !== "codex") return;
+  try {
+    const result = configureCodexLocalPlugins(agentDef, repoDir);
+    if (result.materializedConfig) {
+      success(`${agentDef.name} — materialized config.toml for this machine`);
+    }
+    if (result.copiedConfigFromRepo) {
+      success(`${agentDef.name} — copied config.toml as a local file`);
+    }
+    if (result.pluginCount > 0) {
+      success(`${agentDef.name} — registered ${result.pluginCount} local plugin(s)`);
+    }
+  } catch (err) {
+    warn(`${agentDef.name} — local plugin config skipped: ${(err as Error).message}`);
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -67,8 +67,9 @@ describe("schema-loader", () => {
       expect(codex.configDir.darwin).toBe("~/.codex");
       expect(codex.detect.type).toBe("directory-exists");
       expect(codex.detect.type === "directory-exists" && codex.detect.path).toBe("~/.codex");
-      expect(codex.portable).toContain("config.toml");
+      expect(codex.portable).not.toContain("config.toml");
       expect(codex.portable).toContain("AGENTS.md");
+      expect(codex.portable).toContain("plugins/cache/local-plugins/**");
       expect(codex.instructions.filename).toBe("AGENTS.md");
       expect(codex.mcp.configPath).toBe("config.toml");
       expect(codex.mcp.rootKey).toBe("mcp_servers");

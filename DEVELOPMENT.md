@@ -111,6 +111,8 @@ agents-anywhere.json → manifest.ts → enabled agents
 
 The linker reads the `portable` array from each agent definition and creates symlinks from the config repo to the agent's config directory. `commands/**` becomes a symlink at `~/.claude/commands` → `~/agents-anywhere-config/claude-code/commands`; nested roots like `plugins/cache/local-plugins/**` are preserved as `plugins/cache/local-plugins`.
 
+Codex is special: `config.toml` is not portable because it contains machine-specific absolute paths. MCP sync still writes Codex MCP servers into the local `~/.codex/config.toml`, and `link codex` registers synced local plugins with paths for the current machine.
+
 ### MCP: forward transform and reverse import
 
 **Forward (mcp sync):** `mcp.json` (normalized) → `transformer.ts` → per-agent native format → `writer.ts`
